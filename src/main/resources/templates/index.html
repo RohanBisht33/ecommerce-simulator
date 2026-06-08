@@ -1,444 +1,413 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NexStore — Storefront</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-  <style>
-    :root {
-      --brand-dark:   #0d0f14;
-      --brand-mid:    #161b27;
-      --brand-card:   #1c2233;
-      --brand-border: #2a3350;
-      --brand-accent: #e8f04a;   /* electric lime */
-      --brand-accent2:#4af0d4;   /* cyan */
-      --brand-danger: #ff4c6a;
-      --text-primary: #eef0f6;
-      --text-muted:   #7a839e;
-      --radius-card:  16px;
-      --transition:   0.22s ease;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NexStore — Storefront</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <style>
+      :root {
+        --brand-dark:   #0d0f14;
+        --brand-mid:    #161b27;
+        --brand-card:   #1c2233;
+        --brand-border: #2a3350;
+        --brand-accent: #e8f04a;
+        --brand-accent2:#4af0d4;
+        --brand-danger: #ff4c6a;
+        --text-primary: #eef0f6;
+        --text-muted:   #7a839e;
+        --radius-card:  16px;
+        --transition:   0.22s ease;
+      }
 
-    *, *::before, *::after { box-sizing: border-box; }
+      *, *::before, *::after { box-sizing: border-box; }
 
-    body {
-      background-color: var(--brand-dark);
-      color: var(--text-primary);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
-      min-height: 100vh;
-    }
+      body {
+        background-color: var(--brand-dark);
+        color: var(--text-primary);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.95rem;
+        min-height: 100vh;
+      }
 
-    /* ── Navbar ── */
-    .nex-navbar {
-      background: rgba(13,15,20,0.85);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--brand-border);
-      position: sticky;
-      top: 0;
-      z-index: 1030;
-      padding: 0.9rem 0;
-    }
-    .nex-logo {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 1.55rem;
-      letter-spacing: -0.5px;
-      color: var(--text-primary);
-      text-decoration: none;
-    }
-    .nex-logo span { color: var(--brand-accent); }
-    .cart-pill {
-      background: var(--brand-card);
-      border: 1px solid var(--brand-border);
-      border-radius: 50px;
-      padding: 0.35rem 0.9rem;
-      color: var(--text-primary);
-      text-decoration: none;
-      font-size: 0.88rem;
-      transition: border-color var(--transition), background var(--transition);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .cart-pill:hover { border-color: var(--brand-accent); color: var(--brand-accent); }
-    .cart-badge {
-      background: var(--brand-accent);
-      color: var(--brand-dark);
-      font-weight: 700;
-      font-size: 0.72rem;
-      border-radius: 50px;
-      padding: 1px 7px;
-    }
+      .nex-navbar {
+        background: rgba(13,15,20,0.85);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--brand-border);
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        padding: 0.9rem 0;
+      }
+      .nex-logo {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.55rem;
+        letter-spacing: -0.5px;
+        color: var(--text-primary);
+        text-decoration: none;
+      }
+      .nex-logo span { color: var(--brand-accent); }
+      .cart-pill {
+        background: var(--brand-card);
+        border: 1px solid var(--brand-border);
+        border-radius: 50px;
+        padding: 0.35rem 0.9rem;
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 0.88rem;
+        transition: border-color var(--transition), background var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .cart-pill:hover { border-color: var(--brand-accent); color: var(--brand-accent); }
+      .cart-badge {
+        background: var(--brand-accent);
+        color: var(--brand-dark);
+        font-weight: 700;
+        font-size: 0.72rem;
+        border-radius: 50px;
+        padding: 1px 7px;
+      }
 
-    /* ── Hero Banner ── */
-    .hero-strip {
-      background: linear-gradient(105deg, #0d0f14 30%, #111827);
-      border-bottom: 1px solid var(--brand-border);
-      padding: 2.5rem 0 2rem;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero-strip::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 60% 120% at 80% 50%, rgba(232,240,74,0.06) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .hero-heading {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: clamp(1.8rem, 4vw, 2.9rem);
-      line-height: 1.15;
-      letter-spacing: -0.5px;
-    }
-    .hero-heading em {
-      font-style: normal;
-      color: var(--brand-accent);
-    }
-    .hero-sub {
-      color: var(--text-muted);
-      max-width: 480px;
-      line-height: 1.6;
-      font-weight: 300;
-    }
-    .flash-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(255,76,106,0.12);
-      border: 1px solid rgba(255,76,106,0.35);
-      color: var(--brand-danger);
-      border-radius: 50px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 3px 10px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      margin-bottom: 0.75rem;
-    }
-    .flash-badge i { animation: pulse-dot 1.4s ease-in-out infinite; }
-    @keyframes pulse-dot {
-      0%,100% { opacity: 1; }
-      50%      { opacity: 0.3; }
-    }
+      .hero-strip {
+        background: linear-gradient(105deg, #0d0f14 30%, #111827);
+        border-bottom: 1px solid var(--brand-border);
+        padding: 2.5rem 0 2rem;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero-strip::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 60% 120% at 80% 50%, rgba(232,240,74,0.06) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      .hero-heading {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: clamp(1.8rem, 4vw, 2.9rem);
+        line-height: 1.15;
+        letter-spacing: -0.5px;
+      }
+      .hero-heading em { font-style: normal; color: var(--brand-accent); }
+      .hero-sub {
+        color: var(--text-muted);
+        max-width: 480px;
+        line-height: 1.6;
+        font-weight: 300;
+      }
+      .flash-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255,76,106,0.12);
+        border: 1px solid rgba(255,76,106,0.35);
+        color: var(--brand-danger);
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+      }
+      .flash-badge i { animation: pulse-dot 1.4s ease-in-out infinite; }
+      @keyframes pulse-dot {
+        0%,100% { opacity: 1; }
+        50%      { opacity: 0.3; }
+      }
 
-    /* ── Filter Bar ── */
-    .filter-bar {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 1.25rem 0 0.5rem;
-    }
-    .filter-chip {
-      background: var(--brand-card);
-      border: 1px solid var(--brand-border);
-      border-radius: 50px;
-      color: var(--text-muted);
-      font-size: 0.82rem;
-      padding: 5px 14px;
-      cursor: pointer;
-      transition: all var(--transition);
-      text-decoration: none;
-    }
-    .filter-chip:hover, .filter-chip.active {
-      border-color: var(--brand-accent);
-      color: var(--brand-accent);
-      background: rgba(232,240,74,0.06);
-    }
+      .filter-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 1.25rem 0 0.5rem;
+      }
+      .filter-chip {
+        background: var(--brand-card);
+        border: 1px solid var(--brand-border);
+        border-radius: 50px;
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        padding: 5px 14px;
+        cursor: pointer;
+        transition: all var(--transition);
+        text-decoration: none;
+      }
+      .filter-chip:hover, .filter-chip.active {
+        border-color: var(--brand-accent);
+        color: var(--brand-accent);
+        background: rgba(232,240,74,0.06);
+      }
 
-    /* ── Product Grid ── */
-    .product-grid {
-      padding: 1.5rem 0 3rem;
-    }
-    .product-card {
-      background: var(--brand-card);
-      border: 1px solid var(--brand-border);
-      border-radius: var(--radius-card);
-      overflow: hidden;
-      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    .product-card:hover {
-      transform: translateY(-4px);
-      border-color: #3a4660;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,240,74,0.08);
-    }
+      .product-grid { padding: 1.5rem 0 3rem; }
+      .product-card {
+        background: var(--brand-card);
+        border: 1px solid var(--brand-border);
+        border-radius: var(--radius-card);
+        overflow: hidden;
+        transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .product-card:hover {
+        transform: translateY(-4px);
+        border-color: #3a4660;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,240,74,0.08);
+      }
 
-    /* Image wrapper */
-    .product-img-wrap {
-      position: relative;
-      background: #111827;
-      aspect-ratio: 1 / 1;
-      overflow: hidden;
-    }
-    .product-img-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s ease;
-    }
-    .product-card:hover .product-img-wrap img {
-      transform: scale(1.04);
-    }
+      .product-img-wrap {
+        position: relative;
+        background: #111827;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+      }
+      .product-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+      }
+      .product-card:hover .product-img-wrap img { transform: scale(1.04); }
 
-    /* Badges overlaid on image */
-    .badge-overlay {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .badge-sale {
-      background: var(--brand-danger);
-      color: #fff;
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      padding: 3px 9px;
-      border-radius: 4px;
-    }
-    .badge-stock-out {
-      background: rgba(13,15,20,0.85);
-      border: 1px solid rgba(255,76,106,0.5);
-      color: var(--brand-danger);
-      font-size: 0.68rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 3px 9px;
-      border-radius: 4px;
-      backdrop-filter: blur(6px);
-    }
-    .badge-stock-low {
-      background: rgba(13,15,20,0.85);
-      border: 1px solid rgba(255,165,0,0.5);
-      color: #ffa500;
-      font-size: 0.68rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 3px 9px;
-      border-radius: 4px;
-      backdrop-filter: blur(6px);
-    }
+      .badge-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .badge-sale {
+        background: var(--brand-danger);
+        color: #fff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        padding: 3px 9px;
+        border-radius: 4px;
+      }
+      .badge-stock-out {
+        background: rgba(13,15,20,0.85);
+        border: 1px solid rgba(255,76,106,0.5);
+        color: var(--brand-danger);
+        font-size: 0.68rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 3px 9px;
+        border-radius: 4px;
+        backdrop-filter: blur(6px);
+      }
+      .badge-stock-low {
+        background: rgba(13,15,20,0.85);
+        border: 1px solid rgba(255,165,0,0.5);
+        color: #ffa500;
+        font-size: 0.68rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 3px 9px;
+        border-radius: 4px;
+        backdrop-filter: blur(6px);
+      }
 
-    /* Out-of-stock overlay */
-    .sold-out-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(13,15,20,0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(2px);
-    }
-    .sold-out-overlay span {
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 1.1rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--brand-danger);
-      border: 2px solid var(--brand-danger);
-      padding: 5px 18px;
-      border-radius: 4px;
-      background: rgba(13,15,20,0.5);
-    }
+      .sold-out-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(13,15,20,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(2px);
+      }
+      .sold-out-overlay span {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--brand-danger);
+        border: 2px solid var(--brand-danger);
+        padding: 5px 18px;
+        border-radius: 4px;
+        background: rgba(13,15,20,0.5);
+      }
 
-    /* Card body */
-    .product-body {
-      padding: 1rem 1.1rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .product-category {
-      font-size: 0.72rem;
-      color: var(--brand-accent2);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 500;
-    }
-    .product-name {
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--text-primary);
-      line-height: 1.3;
-    }
-    .product-sku {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
+      .product-body {
+        padding: 1rem 1.1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .product-category {
+        font-size: 0.72rem;
+        color: var(--brand-accent2);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 500;
+      }
+      .product-name {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text-primary);
+        line-height: 1.3;
+      }
+      .product-sku { font-size: 0.72rem; color: var(--text-muted); }
 
-    /* Price row */
-    .price-row {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      margin-top: 4px;
-    }
-    .price-current {
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 1.25rem;
-      color: var(--brand-accent);
-    }
-    .price-original {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      text-decoration: line-through;
-    }
+      .price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .price-current {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--brand-accent);
+      }
+      .price-original {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        text-decoration: line-through;
+      }
 
-    /* Stock meter */
-    .stock-meter-wrap { margin-top: 6px; }
-    .stock-label {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-    .stock-label span:last-child { color: var(--text-primary); font-weight: 500; }
-    .stock-bar {
-      height: 4px;
-      background: var(--brand-border);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-    .stock-fill {
-      height: 100%;
-      border-radius: 99px;
-      background: var(--brand-accent2);
-      transition: width 0.3s ease;
-    }
-    .stock-fill.low  { background: #ffa500; }
-    .stock-fill.out  { background: var(--brand-danger); width: 100% !important; }
+      .stock-meter-wrap { margin-top: 6px; }
+      .stock-label {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+      .stock-label span:last-child { color: var(--text-primary); font-weight: 500; }
+      .stock-bar {
+        height: 4px;
+        background: var(--brand-border);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .stock-fill {
+        height: 100%;
+        border-radius: 99px;
+        background: var(--brand-accent2);
+        transition: width 0.3s ease;
+      }
+      .stock-fill.low { background: #ffa500; }
+      .stock-fill.out { background: var(--brand-danger); width: 100% !important; }
 
-    /* Card footer (actions) */
-    .product-actions {
-      padding: 0 1.1rem 1.1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-    .btn-primary-nex {
-      background: var(--brand-accent);
-      color: var(--brand-dark);
-      border: none;
-      border-radius: 8px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 0.84rem;
-      letter-spacing: 0.2px;
-      padding: 9px 14px;
-      cursor: pointer;
-      width: 100%;
-      transition: background var(--transition), transform 0.1s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn-primary-nex:hover:not(:disabled) { background: #d4da3e; }
-    .btn-primary-nex:active:not(:disabled) { transform: scale(0.98); }
-    .btn-primary-nex:disabled {
-      background: var(--brand-border);
-      color: var(--text-muted);
-      cursor: not-allowed;
-    }
+      .product-actions {
+        padding: 0 1.1rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .btn-primary-nex {
+        background: var(--brand-accent);
+        color: var(--brand-dark);
+        border: none;
+        border-radius: 8px;
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.84rem;
+        letter-spacing: 0.2px;
+        padding: 9px 14px;
+        cursor: pointer;
+        width: 100%;
+        transition: background var(--transition), transform 0.1s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .btn-primary-nex:hover:not(:disabled) { background: #d4da3e; }
+      .btn-primary-nex:active:not(:disabled) { transform: scale(0.98); }
+      .btn-primary-nex:disabled {
+        background: var(--brand-border);
+        color: var(--text-muted);
+        cursor: not-allowed;
+      }
 
-    .btn-flash {
-      background: transparent;
-      border: 1px solid var(--brand-danger);
-      color: var(--brand-danger);
-      border-radius: 8px;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 500;
-      font-size: 0.84rem;
-      padding: 8px 14px;
-      cursor: pointer;
-      width: 100%;
-      transition: background var(--transition), color var(--transition);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn-flash:hover:not(:disabled) {
-      background: var(--brand-danger);
-      color: #fff;
-    }
-    .btn-flash:disabled {
-      border-color: var(--brand-border);
-      color: var(--text-muted);
-      cursor: not-allowed;
-    }
+      .btn-flash {
+        background: transparent;
+        border: 1px solid var(--brand-danger);
+        color: var(--brand-danger);
+        border-radius: 8px;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 500;
+        font-size: 0.84rem;
+        padding: 8px 14px;
+        cursor: pointer;
+        width: 100%;
+        transition: background var(--transition), color var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .btn-flash:hover:not(:disabled) { background: var(--brand-danger); color: #fff; }
+      .btn-flash:disabled {
+        border-color: var(--brand-border);
+        color: var(--text-muted);
+        cursor: not-allowed;
+      }
 
-    .btn-restock {
-      background: transparent;
-      border: 1px solid var(--brand-border);
-      color: var(--text-muted);
-      border-radius: 8px;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 400;
-      font-size: 0.8rem;
-      padding: 7px 14px;
-      cursor: pointer;
-      width: 100%;
-      transition: border-color var(--transition), color var(--transition);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn-restock:hover {
-      border-color: var(--brand-accent2);
-      color: var(--brand-accent2);
-    }
+      .btn-restock {
+        background: transparent;
+        border: 1px solid var(--brand-border);
+        color: var(--text-muted);
+        border-radius: 8px;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 400;
+        font-size: 0.8rem;
+        padding: 7px 14px;
+        cursor: pointer;
+        width: 100%;
+        transition: border-color var(--transition), color var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .btn-restock:hover { border-color: var(--brand-accent2); color: var(--brand-accent2); }
 
-    /* ── Footer ── */
-    .nex-footer {
-      border-top: 1px solid var(--brand-border);
-      padding: 1.5rem 0;
-      color: var(--text-muted);
-      font-size: 0.82rem;
-      text-align: center;
-    }
-    .nex-footer a { color: var(--brand-accent); text-decoration: none; }
+      .nex-footer {
+        border-top: 1px solid var(--brand-border);
+        padding: 1.5rem 0;
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        text-align: center;
+      }
+      .nex-footer a { color: var(--brand-accent); text-decoration: none; }
 
-    /* Flash alert */
-    .flash-alert {
-      background: rgba(232,240,74,0.08);
-      border: 1px solid rgba(232,240,74,0.25);
-      color: var(--brand-accent);
-      border-radius: 10px;
-      font-size: 0.88rem;
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-  </style>
-</head>
+      .flash-alert {
+        background: rgba(232,240,74,0.08);
+        border: 1px solid rgba(232,240,74,0.25);
+        color: var(--brand-accent);
+        border-radius: 10px;
+        font-size: 0.88rem;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    </style>
+  </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     NAVBAR
-════════════════════════════════════════ -->
+<!-- ══ NAVBAR ══ -->
 <nav class="nex-navbar">
   <div class="container d-flex align-items-center justify-content-between">
     <a href="/" class="nex-logo">Nex<span>Store</span></a>
@@ -446,16 +415,13 @@
       <a href="/cart" class="cart-pill">
         <i class="bi bi-bag"></i>
         Cart
-        <!-- Show count only when cart has items -->
-        <span class="cart-badge" th:text="${cartItemCount}" th:if="${cartItemCount > 0}">3</span>
+        <span class="cart-badge" th:text="${cartItemCount}" th:if="${cartItemCount > 0}"></span>
       </a>
     </div>
   </div>
 </nav>
 
-<!-- ══════════════════════════════════════
-     HERO STRIP
-════════════════════════════════════════ -->
+<!-- ══ HERO STRIP ══ -->
 <section class="hero-strip">
   <div class="container">
     <div class="flash-badge">
@@ -465,21 +431,20 @@
     <h1 class="hero-heading">The Store That<br><em>Ships Fast.</em></h1>
     <p class="hero-sub mt-2">Premium products. Real-time stock. One-click checkout — powered by Spring Boot.</p>
 
-    <!-- Session success/error flash messages -->
     <div class="flash-alert mt-3" th:if="${successMessage}">
       <i class="bi bi-check-circle-fill"></i>
-      <span th:text="${successMessage}">Item added to cart successfully.</span>
+      <span th:text="${successMessage}"></span>
     </div>
-    <div class="alert alert-danger border-0 mt-3 py-2" style="background:rgba(255,76,106,0.1);color:var(--brand-danger);border-radius:10px;" th:if="${errorMessage}">
+    <div class="alert alert-danger border-0 mt-3 py-2"
+         style="background:rgba(255,76,106,0.1);color:var(--brand-danger);border-radius:10px;"
+         th:if="${errorMessage}">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      <span th:text="${errorMessage}">Something went wrong.</span>
+      <span th:text="${errorMessage}"></span>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════
-     FILTER CHIPS
-════════════════════════════════════════ -->
+<!-- ══ FILTER CHIPS ══ -->
 <div class="container">
   <div class="filter-bar">
     <a href="/" class="filter-chip active">All Products</a>
@@ -494,13 +459,11 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     PRODUCT GRID
-════════════════════════════════════════ -->
+<!-- ══ PRODUCT GRID ══ -->
 <section class="product-grid">
   <div class="container">
 
-    <!-- Empty state -->
+    <!-- Empty state — rendered by Thymeleaf when the list Spring sends is empty -->
     <div class="text-center py-5" th:if="${#lists.isEmpty(products)}">
       <i class="bi bi-box-seam" style="font-size:3rem;color:var(--text-muted);"></i>
       <p class="mt-3" style="color:var(--text-muted);">No products found. Try adjusting your filters.</p>
@@ -508,65 +471,66 @@
 
     <div class="row g-3" th:unless="${#lists.isEmpty(products)}">
 
-      <!-- ── Single Product Card (th:each loop) ── -->
-      <div class="col-12 col-sm-6 col-lg-4 col-xl-3"
-           th:each="product : ${products}">
-
+      <!-- ── Product card — one per Product object in the model list ── -->
+      <div class="col-12 col-sm-6 col-lg-4 col-xl-3" th:each="product : ${products}">
         <div class="product-card">
 
-          <!-- Image -->
+          <!-- ── Image ── -->
           <div class="product-img-wrap">
-            <img th:src="${product.imageUrl}"
-                 th:alt="${product.name}"
-                 src="https://placehold.co/400x400/1c2233/7a839e?text=Product"
-                 loading="lazy" />
+            <!--
+              No src fallback — Spring must always supply a non-null imageUrl.
+              If a product has no image, set imageUrl to a placeholder URL in
+              the service layer before adding it to the model.
+            -->
+            <img th:src="${product.imageUrl}" th:alt="${product.name}" loading="lazy" />
 
-            <!-- Badges -->
+            <!-- Badges — all driven purely by product.stock / product.discountPercent -->
             <div class="badge-overlay">
               <span class="badge-sale"
                     th:if="${product.discountPercent > 0}"
-                    th:text="${product.discountPercent} + '% OFF'">20% OFF</span>
+                    th:text="${product.discountPercent} + '% OFF'"></span>
 
               <span class="badge-stock-out"
                     th:if="${product.stock <= 0}">Out of Stock</span>
 
               <span class="badge-stock-low"
-                    th:if="${product.stock > 0 && product.stock <= 5}"
-                    th:text="'Only ' + ${product.stock} + ' left'">Only 3 left</span>
+                    th:if="${product.stock > 0 and product.stock <= 5}"
+                    th:text="'Only ' + ${product.stock} + ' left'"></span>
             </div>
 
-            <!-- Greyed-out overlay when stock = 0 -->
+            <!-- Sold-out overlay — shown only when stock = 0 -->
             <div class="sold-out-overlay" th:if="${product.stock <= 0}">
               <span>Sold Out</span>
             </div>
           </div>
 
-          <!-- Body -->
+          <!-- ── Card body ── -->
           <div class="product-body">
-            <div class="product-category" th:text="${product.category}">Electronics</div>
-            <div class="product-name"     th:text="${product.name}">Wireless Earbuds Pro</div>
-            <div class="product-sku"      th:text="'SKU: ' + ${product.sku}">SKU: NEX-0042</div>
+            <div class="product-category" th:text="${product.category}"></div>
+            <div class="product-name"     th:text="${product.name}"></div>
+            <div class="product-sku"      th:text="'SKU: ' + ${product.sku}"></div>
 
-            <!-- Price -->
+            <!-- Price row -->
             <div class="price-row">
               <span class="price-current"
-                    th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$89.99</span>
+                    th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}"></span>
+              <!--
+                Strikethrough only when originalPrice is set AND greater than
+                the current price. Null-safe: th:if evaluates to false when
+                originalPrice is null, so no NullPointerException.
+              -->
               <span class="price-original"
-                    th:if="${product.originalPrice > product.price}"
-                    th:text="'$' + ${#numbers.formatDecimal(product.originalPrice, 1, 2)}">$119.99</span>
+                    th:if="${product.originalPrice != null and product.originalPrice > product.price}"
+                    th:text="'$' + ${#numbers.formatDecimal(product.originalPrice, 1, 2)}"></span>
             </div>
 
             <!-- Stock meter bar -->
             <div class="stock-meter-wrap">
               <div class="stock-label">
                 <span>Stock</span>
-                <span th:text="${product.stock} + ' units'">42 units</span>
+                <span th:text="${product.stock} + ' units'"></span>
               </div>
               <div class="stock-bar">
-                <!--
-                  th:style calculates fill % capped at 100.
-                  stockCapacity is the max units (e.g. 100) the controller puts in the model.
-                -->
                 <div class="stock-fill"
                      th:classappend="${product.stock <= 0} ? 'out' : (${product.stock <= 5} ? 'low' : '')"
                      th:style="'width:' + ${product.stock <= 0 ? 0 : (product.stock >= product.stockCapacity ? 100 : (product.stock * 100 / product.stockCapacity))} + '%'">
@@ -575,27 +539,21 @@
             </div>
           </div>
 
-          <!-- Action Buttons -->
+          <!-- ── Action buttons ── -->
           <div class="product-actions">
 
             <!-- ① Add to Cart -->
             <form th:action="@{/cart/add/{id}(id=${product.id})}" method="post">
-              <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
               <input type="hidden" name="quantity" value="1" />
-              <button type="submit"
-                      class="btn-primary-nex"
-                      th:disabled="${product.stock <= 0}">
+              <button type="submit" class="btn-primary-nex" th:disabled="${product.stock <= 0}">
                 <i class="bi bi-bag-plus"></i>
-                <span th:text="${product.stock <= 0} ? 'Out of Stock' : 'Add to Cart'">Add to Cart</span>
+                <span th:text="${product.stock <= 0} ? 'Out of Stock' : 'Add to Cart'"></span>
               </button>
             </form>
 
             <!-- ② Buy Now (Flash Sale) -->
             <form th:action="@{/buy/now/{id}(id=${product.id})}" method="post">
-              <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-              <button type="submit"
-                      class="btn-flash"
-                      th:disabled="${product.stock <= 0}">
+              <button type="submit" class="btn-flash" th:disabled="${product.stock <= 0}">
                 <i class="bi bi-lightning-charge-fill"></i>
                 Buy Now
               </button>
@@ -604,12 +562,10 @@
             <!-- ③ Restock / Sell (warehouse simulation) -->
             <form th:action="@{/warehouse/restock/{id}(id=${product.id})}" method="post"
                   style="display:flex; gap:7px;">
-              <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
               <input type="number"
                      name="quantity"
                      min="1"
                      max="999"
-                     value="10"
                      style="width:70px; background:var(--brand-mid); border:1px solid var(--brand-border);
                             border-radius:8px; color:var(--text-primary); padding:7px 8px;
                             font-size:0.82rem; text-align:center;"
@@ -622,15 +578,13 @@
 
           </div><!-- /product-actions -->
         </div><!-- /product-card -->
-      </div><!-- /col (th:each) -->
+      </div><!-- /col th:each -->
 
     </div><!-- /row -->
   </div><!-- /container -->
 </section>
 
-<!-- ══════════════════════════════════════
-     FOOTER
-════════════════════════════════════════ -->
+<!-- ══ FOOTER ══ -->
 <footer class="nex-footer">
   <div class="container">
     <span>NexStore &copy; 2025 &mdash; Built with Spring Boot + Thymeleaf</span>

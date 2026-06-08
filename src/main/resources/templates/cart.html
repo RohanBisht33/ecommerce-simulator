@@ -385,7 +385,7 @@
           <!-- Quantity stepper (POST form) -->
           <div class="qty-stepper">
             <form th:action="@{/cart/update/{cartItemId}(cartItemId=${item.id})}" method="post">
-              <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+              
               <input type="hidden" name="action" value="decrease" />
               <button type="submit" class="qty-btn"
                       th:disabled="${item.quantity <= 1}">−</button>
@@ -395,7 +395,7 @@
                    th:value="${item.quantity}" min="1" max="999" readonly />
 
             <form th:action="@{/cart/update/{cartItemId}(cartItemId=${item.id})}" method="post">
-              <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+              
               <input type="hidden" name="action" value="increase" />
               <button type="submit" class="qty-btn"
                       th:disabled="${item.quantity >= item.product.stock}">+</button>
@@ -410,7 +410,7 @@
 
           <!-- Remove -->
           <form th:action="@{/cart/remove/{cartItemId}(cartItemId=${item.id})}" method="post">
-            <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+            
             <button type="submit" class="btn-remove" title="Remove item">
               <i class="bi bi-trash3"></i>
             </button>
@@ -423,7 +423,7 @@
       <!-- Clear cart link -->
       <div class="mt-2 text-end">
         <form th:action="@{/cart/clear}" method="post" style="display:inline;">
-          <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+          
           <button type="submit"
                   style="background:none;border:none;color:var(--text-muted);font-size:0.8rem;cursor:pointer;padding:4px 0;"
                   onclick="return confirm('Clear your entire cart?')">
@@ -479,7 +479,7 @@
 
       <!-- Promo Code -->
       <form th:action="@{/cart/promo}" method="post" class="promo-row">
-        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+        
         <input type="text" name="promoCode" class="promo-input"
                placeholder="Promo code"
                th:value="${appliedPromo}" />
@@ -491,7 +491,7 @@
 
       <!-- Checkout CTA -->
       <form th:action="@{/checkout}" method="post">
-        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+        
         <button type="submit" class="btn-checkout"
                 th:disabled="${#lists.isEmpty(cartItems)}">
           <i class="bi bi-lock-fill"></i>
