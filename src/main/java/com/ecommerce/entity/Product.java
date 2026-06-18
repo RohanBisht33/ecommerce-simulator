@@ -23,20 +23,6 @@ public class Product {
     @Min(value = 0, message = "Price cannot be negative")
     private BigDecimal price;
 
-    /**
-     * The original (pre-discount) price of this product.
-     *
-     * Used in index.html:
-     *   th:if="${product.originalPrice > product.price}"
-     *   th:text="'$' + ${#numbers.formatDecimal(product.originalPrice, 1, 2)}"
-     *
-     * Without this field Thymeleaf throws a PropertyAccessException and the
-     * entire page fails to render, even for products that have no discount.
-     *
-     * Mapped as a nullable column so existing rows without a strikethrough
-     * price don't require a value. The template's th:if guard means the
-     * strikethrough span is simply hidden when originalPrice is null.
-     */
     @Column(nullable = true, precision = 10, scale = 2)
     private BigDecimal originalPrice;
 
@@ -44,19 +30,6 @@ public class Product {
     @Min(value = 0, message = "Stock allocation cannot drop below zero")
     private Integer stock;
 
-    /**
-     * The maximum warehouse capacity for this product.
-     *
-     * Used in index.html to compute the stock progress-bar fill percentage:
-     *   th:style="'width:' + ${product.stock >= product.stockCapacity ? 100
-     *              : (product.stock * 100 / product.stockCapacity)} + '%'"
-     *
-     * Without this field Thymeleaf throws a PropertyAccessException on every
-     * product card, crashing the whole storefront page.
-     *
-     * Defaults to 100 so the bar renders sensibly for any product whose
-     * capacity was never explicitly set.
-     */
     @Column(nullable = false)
     private Integer stockCapacity = 100;
 

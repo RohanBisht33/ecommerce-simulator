@@ -1,16 +1,13 @@
 package com.ecommerce.controller;
 
-import com.ecommerce.entity.Product;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.service.CartService;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 
@@ -19,7 +16,7 @@ public class CartController {
     private final CartService cartService;
     private final ProductRepository productRepository;
 
-    public CartController(CartService cartService, ProductRepository productRepository){
+    public CartController(CartService cartService, ProductRepository productRepository) {
         this.cartService = cartService;
         this.productRepository = productRepository;
     }
@@ -41,5 +38,19 @@ public class CartController {
         model.addAttribute("total", total);
 
         return "cart";
+    }
+
+    @PostMapping("/cart/update/{cartItemId}")
+    public String updateCartItemQuantity(
+            @PathVariable Long cartItemId,
+            @RequestParam String action) {
+
+        if ("increase".equals(action)) {
+            cartService.increaseQuantity(cartItemId);
+        } else if ("decrease".equals(action)) {
+            cartService.decreaseQuantity(cartItemId);
+        }
+
+        return "redirect:/cart";
     }
 }

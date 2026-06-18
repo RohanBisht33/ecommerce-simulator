@@ -27,6 +27,25 @@ public class CartService {
             existingItem.setQuantity(existingItem.getQuantity() + 1);
         }
     }
+    public void increaseQuantity(Long id) {
+        CartItem existingItem = items.get(id);
+
+        if (existingItem != null) {
+            existingItem.setQuantity(existingItem.getQuantity() + 1);
+        }
+    }
+
+    public void decreaseQuantity(Long id) {
+        CartItem existingItem = items.get(id);
+
+        if (existingItem != null) {
+            if (existingItem.getQuantity() <= 0) {
+                items.remove(id);
+            } else {
+                existingItem.setQuantity(existingItem.getQuantity() - 1);
+            }
+        }
+    }
     public void clearCart(){
         items.clear();
     }

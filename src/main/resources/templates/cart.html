@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -313,9 +313,33 @@
 <nav class="nex-navbar">
   <div class="container d-flex align-items-center justify-content-between">
     <a href="/" class="nex-logo">Nex<span>Store</span></a>
-    <a href="/" class="nex-nav-link">
-      <i class="bi bi-arrow-left"></i> Continue Shopping
-    </a>
+    <div class="d-flex align-items-center gap-3">
+      <!-- Admin badge -->
+      <span sec:authorize="hasRole('ADMIN')"
+            style="background:rgba(232,240,74,0.12);border:1px solid rgba(232,240,74,0.35);
+                   color:var(--brand-accent);font-size:0.72rem;font-weight:700;letter-spacing:0.6px;
+                   text-transform:uppercase;padding:3px 10px;border-radius:50px;">
+        <i class="bi bi-shield-fill-check me-1"></i>Admin
+      </span>
+      <!-- Back to store -->
+      <a href="/" class="nex-nav-link">
+        <i class="bi bi-shop"></i> Store
+      </a>
+      <!-- Checkout shortcut -->
+      <a href="/checkout" class="nex-nav-link">
+        <i class="bi bi-credit-card"></i> Checkout
+      </a>
+      <!-- Login / Logout -->
+      <a href="/login" sec:authorize="isAnonymous()" class="nex-nav-link">
+        <i class="bi bi-person"></i> Sign In
+      </a>
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="margin:0;">
+        <button type="submit" class="nex-nav-link" style="background:none;border:none;cursor:pointer;padding:0;">
+          <i class="bi bi-box-arrow-right"></i>
+          <span sec:authentication="name">User</span> · Sign Out
+        </button>
+      </form>
+    </div>
   </div>
 </nav>
 
@@ -326,7 +350,7 @@
     <div class="step-bar">
       <span class="step-active">① Cart</span>
       <i class="bi bi-chevron-right"></i>
-      <span>② Checkout</span>
+      <a href="/checkout" class="text-decoration-none" style="color:var(--text-muted);">② Checkout</a>
       <i class="bi bi-chevron-right"></i>
       <span>③ Confirmation</span>
     </div>
@@ -385,7 +409,7 @@
           <!-- Quantity stepper (POST form) -->
           <div class="qty-stepper">
             <form th:action="@{/cart/update/{cartItemId}(cartItemId=${item.id})}" method="post">
-              
+
               <input type="hidden" name="action" value="decrease" />
               <button type="submit" class="qty-btn"
                       th:disabled="${item.quantity <= 1}">−</button>
@@ -395,7 +419,7 @@
                    th:value="${item.quantity}" min="1" max="999" readonly />
 
             <form th:action="@{/cart/update/{cartItemId}(cartItemId=${item.id})}" method="post">
-              
+
               <input type="hidden" name="action" value="increase" />
               <button type="submit" class="qty-btn"
                       th:disabled="${item.quantity >= item.product.stock}">+</button>
@@ -410,7 +434,7 @@
 
           <!-- Remove -->
           <form th:action="@{/cart/remove/{cartItemId}(cartItemId=${item.id})}" method="post">
-            
+
             <button type="submit" class="btn-remove" title="Remove item">
               <i class="bi bi-trash3"></i>
             </button>
@@ -423,7 +447,7 @@
       <!-- Clear cart link -->
       <div class="mt-2 text-end">
         <form th:action="@{/cart/clear}" method="post" style="display:inline;">
-          
+
           <button type="submit"
                   style="background:none;border:none;color:var(--text-muted);font-size:0.8rem;cursor:pointer;padding:4px 0;"
                   onclick="return confirm('Clear your entire cart?')">
@@ -479,7 +503,7 @@
 
       <!-- Promo Code -->
       <form th:action="@{/cart/promo}" method="post" class="promo-row">
-        
+
         <input type="text" name="promoCode" class="promo-input"
                placeholder="Promo code"
                th:value="${appliedPromo}" />
@@ -490,14 +514,13 @@
            th:text="${promoError}">Invalid promo code.</div>
 
       <!-- Checkout CTA -->
-      <form th:action="@{/checkout}" method="post">
-        
-        <button type="submit" class="btn-checkout"
-                th:disabled="${#lists.isEmpty(cartItems)}">
-          <i class="bi bi-lock-fill"></i>
+      <div class="mt-3">
+        <a th:href="@{/checkout}" class="btn-checkout text-decoration-none"
+           th:classappend="${#lists.isEmpty(cartItems)} ? 'disabled' : ''">
+          <i class="bi bi-credit-card-2-front-fill"></i>
           Proceed to Checkout
-        </button>
-      </form>
+        </a>
+      </div>
 
       <a href="/" class="btn-continue text-decoration-none">
         <i class="bi bi-arrow-left"></i> Continue Shopping

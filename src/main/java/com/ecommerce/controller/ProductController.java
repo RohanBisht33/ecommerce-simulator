@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 public class ProductController {
     private final ProductRepository productRepository;
@@ -22,10 +25,16 @@ public class ProductController {
         this.productRepository = productRepository;
         this.cartService = cartService;
     }
-    @GetMapping("/")
-    public String showStorefront(Model model) {
 
-        model.addAttribute("products", productRepository.findAll());
+    @GetMapping("/")
+    public String showStorefront(Model model, @RequestParam(required = false) String category) {
+
+        if (category == null || category.trim().isEmpty()) {
+            model.addAttribute("products", productRepository.findAll());
+        }
+        else {
+            model.addAttribute("products", productRepository.findByCategory(category));
+        }
         return "index";
     }
 

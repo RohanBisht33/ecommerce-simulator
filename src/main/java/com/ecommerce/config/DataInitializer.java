@@ -1,24 +1,41 @@
 package com.ecommerce.config;
 
-import com.ecommerce.repository.ProductRepository;
+import com.ecommerce.entity.User;
 import com.ecommerce.entity.Product;
+import com.ecommerce.repository.UserRepository;
+import com.ecommerce.repository.ProductRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder; // 🔐 Inject the security context encoder
 
-    public DataInitializer(ProductRepository productRepository) {
+    public DataInitializer(ProductRepository productRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.productRepository = productRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        if (productRepository.count() == 0) {
+        List<Product> productList = new ArrayList<>();
 
+        // 🟢 Securely seed encrypted users
+        if (userRepository.count() == 0) {
+            userRepository.save(new User("alex", passwordEncoder.encode("password123"), "CUSTOMER"));
+            userRepository.save(new User("admin", passwordEncoder.encode("admin123"), "ADMIN"));
+            System.out.println("🔐 Mock user identities securely encoded and seeded successfully!");
+        }
+
+        if (productRepository.count() == 0) {
             Product keyboard = new Product(
                     null,
                     "Quantum Mechanical Keyboard",
@@ -31,7 +48,7 @@ public class DataInitializer implements CommandLineRunner {
                     "Electronics",
                     "NEX-KB-001"
             );
-            productRepository.save(keyboard);
+            productList.add(keyboard);
 
             Product mouse = new Product(
                     null,
@@ -45,7 +62,7 @@ public class DataInitializer implements CommandLineRunner {
                     "Electronics",
                     "NEX-MS-002"
             );
-            productRepository.save(mouse);
+            productList.add(mouse);
 
             Product monitor = new Product(
                     null,
@@ -59,7 +76,7 @@ public class DataInitializer implements CommandLineRunner {
                     "Electronics",
                     "NEX-MN-003"
             );
-            productRepository.save(monitor);
+            productList.add(monitor);
 
             Product headphones = new Product(
                     null,
@@ -69,13 +86,14 @@ public class DataInitializer implements CommandLineRunner {
                     0,
                     100,
                     "https://imgs.search.brave.com/xtjskQ2djj3S4lm9QhDA5Qdi4UTG8FhZXdTUWOhMcXw/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/MzFqOEN0WXJnWUwu/anBn",
-                    0,                           // no active discount while out of stock
+                    0,
                     "Electronics",
                     "NEX-HP-004"
             );
-            productRepository.save(headphones);
+            productList.add(headphones);
 
-            System.out.println("💾 Local H2 Database successfully initialized with mock e-commerce products!");
+            productRepository.saveAll(productList);
+            System.out.println("💾 Local Database successfully initialized with mock e-commerce products!");
         }
     }
 }
