@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NexStore — Order Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --brand-dark:   #0d0f14;
+            --brand-mid:    #161b27;
+            --brand-card:   #1c2233;
+            --brand-border: #2a3350;
+            --brand-accent: #e8f04a;
+            --brand-accent2:#4af0d4;
+            --text-primary: #eef0f6;
+            --text-muted:   #7a839e;
+            --radius-card:  16px;
+            --transition:   0.22s ease;
+        }
+
+        body {
+            background-color: var(--brand-dark);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .nex-navbar {
+            background: rgba(13,15,20,0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--brand-border);
+            position: sticky; top: 0; z-index: 1030;
+            padding: 0.9rem 0;
+        }
+        .nex-logo {
+            font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.55rem;
+            color: var(--text-primary); text-decoration: none;
+        }
+        .nex-logo span { color: var(--brand-accent); }
+        .cart-pill {
+            background: var(--brand-card); border: 1px solid var(--brand-border);
+            border-radius: 50px; padding: 0.35rem 0.9rem; color: var(--text-primary);
+            text-decoration: none; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;
+        }
+
+        .detail-container { max-width: 800px; margin: 2.5rem auto; padding: 0 1rem; }
+
+        .back-link {
+            color: var(--brand-accent2); text-decoration: none; font-size: 0.9rem;
+            display: inline-flex; align-items: center; gap: 6px; margin-bottom: 1.5rem;
+        }
+
+        .receipt-card {
+            background: var(--brand-card); border: 1px solid var(--brand-border);
+            border-radius: var(--radius-card); padding: 2rem;
+        }
+
+        .receipt-header {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--brand-border);
+            padding-bottom: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .receipt-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; margin: 0; }
+        .receipt-date { color: var(--text-muted); font-size: 0.88rem; margin-top: 4px; }
+
+        .status-badge {
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+            padding: 4px 12px; border-radius: 50px; background: rgba(74,240,212,0.1); color: var(--brand-accent2);
+            border: 1px solid rgba(74,240,212,0.25);
+        }
+
+        .item-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 0; border-bottom: 1px solid rgba(42,51,80,0.4);
+        }
+        .item-meta { display: flex; align-items: center; gap: 1rem; }
+        .item-img {
+            width: 50px; height: 40px; border-radius: 6px; background: var(--brand-mid);
+            border: 1px solid var(--brand-border); object-fit: cover;
+        }
+        .item-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+        .item-qty { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+
+        .pricing-box {
+            margin-top: 1.5rem; padding-top: 1rem; max-width: 320px; margin-left: auto;
+        }
+        .pricing-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-muted); }
+        .pricing-row.total {
+            font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.25rem;
+            color: var(--brand-accent); border-top: 1px solid var(--brand-border); padding-top: 0.75rem; margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nex-navbar">
+    <div class="container d-flex align-items-center justify-content-between">
+        <a href="/" class="nex-logo">Nex<span>Store</span></a>
+        <a href="/orders" class="cart-pill"><i class="bi bi-arrow-left"></i> Back to History</a>
+    </div>
+</nav>
+
+<div class="detail-container">
+    <a href="/orders" class="back-link"><i class="bi bi-chevron-left"></i> All Orders</a>
+
+    <div class="receipt-card">
+        <div class="receipt-header">
+            <div>
+                <h2 class="receipt-title" th:text="${order.orderNumber}">ORD-XXXXXX</h2>
+                <div class="receipt-date" th:text="'Placed on: ' + ${#temporals.format(order.orderDate, 'dd MMM yyyy, HH:mm')}">18 Jun 2026</div>
+            </div>
+            <span class="status-badge" th:text="${order.status}">PENDING</span>
+        </div>
+
+        <div th:each="item : ${order.orderItems}" class="item-row">
+            <div class="item-meta">
+                <img class="item-img" th:if="${item.product != null && item.product.imageUrl != null}" th:src="${item.product.imageUrl}" />
+                <div>
+                    <div class="item-name" th:text="${item.product != null ? item.product.name : 'Unknown Product'}">Product Item</div>
+                    <div class="item-qty" th:text="'Quantity: ' + ${item.quantity} + ' × $' + ${#numbers.formatDecimal(item.price, 1, 2)}">Quantity: 1</div>
+                </div>
+            </div>
+            <div class="item-name" th:text="'$' + ${#numbers.formatDecimal(item.price * item.quantity, 1, 2)}">$0.00</div>
+        </div>
+
+        <div class="pricing-box">
+            <div class="pricing-row total">
+                <span>Amount Paid</span>
+                <span th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">$0.00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

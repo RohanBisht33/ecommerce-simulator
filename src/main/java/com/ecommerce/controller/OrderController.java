@@ -38,6 +38,27 @@ public class OrderController {
         this.orderRepository = orderRepository;
     }
 
+    // 🔍 Display Itemized Order Receipt Sheet View
+    @GetMapping("/orders/{id}")
+    public String showOrderDetail(@PathVariable Long id, Principal principal, Model model) {
+        if (principal == null) {
+            return "redirect:/login";
+        }
+
+        // 1. Fetch the order or fail if it doesn't exist
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + id));
+
+        // 🛡️ Security Check: Ensure users can only view their own orders
+        if (!order.getUser().getUsername().equals(principal.getName())) {
+            return "redirect:/orders";
+        }
+
+        // 2. Inject dataset into the detail template scope
+        model.addAttribute("order", order);
+        return "order-detail";
+    }
+    
     // 📦 Display Secure User Order History Dashboard View
     @GetMapping("/orders")
     public String showOrderHistory(Principal principal, Model model, @RequestParam(required = false) String status) {
@@ -60,8 +81,14 @@ public class OrderController {
             model.addAttribute("currentStatus", "all");
         }
 
-        // 3. Inject datasets into Thymeleaf template scope
+        // 📊 3. Pre-calculate total spent on the backend to fix the Thymeleaf parsing crash
+        double totalSpent = orders.stream()
+                .mapToDouble(o -> o.getTotalAmount() != null ? o.getTotalAmount().doubleValue() : 0.0)
+                .sum();
+
+        // 4. Inject datasets into Thymeleaf template scope
         model.addAttribute("orders", orders);
+        model.addAttribute("totalSpent", totalSpent); // 🟢 Safely bound pre-calculated variable
         return "orders";
     }
 
@@ -96,8 +123,18 @@ public class OrderController {
     }
 
     @PostMapping("/checkout")
-    public String processCheckout(RedirectAttributes redirectAttributes) {
-        Order completedOrder = orderService.createOrder();
+    public String processCheckout(@RequestParam(required = false) Long productId,
+                                  @RequestParam(required = false, defaultValue = "1") Integer quantity,
+                                  RedirectAttributes redirectAttributes) {
+        Order completedOrder;
+
+        // 🟢 If a specific product ID is passed, process it as a single item buy now purchase
+        if (productId != null) {
+            completedOrder = orderService.createOrderForSingleProduct(productId, quantity);
+        } else {
+            // 🛒 Otherwise default back to checking out everything inside the active session cart
+            completedOrder = orderService.createOrderFromCart();
+        }
 
         redirectAttributes.addFlashAttribute("successMessage",
                 "Order placed successfully! Tracking Number: " + completedOrder.getOrderNumber());

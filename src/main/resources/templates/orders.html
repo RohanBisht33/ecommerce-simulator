@@ -416,7 +416,7 @@
         <div>
           <div class="stat-label">Total Spent</div>
           <div class="stat-value"
-               th:text="'$' + ${#numbers.formatDecimal(orders.stream().mapToDouble(o -> o.totalAmount.doubleValue()).sum(), 1, 2)}">
+               th:text="'$' + ${#numbers.formatDecimal(totalSpent, 1, 2)}">
             $0.00
           </div>
         </div>

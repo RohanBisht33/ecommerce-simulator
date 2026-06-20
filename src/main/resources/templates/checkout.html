@@ -211,6 +211,9 @@
             <a href="/" class="nex-nav-link">
                 <i class="bi bi-shop"></i> Store
             </a>
+            <a href="/orders" class="nex-nav-link">
+                My Orders
+            </a>
             <a href="/cart" class="nex-nav-link">
                 <i class="bi bi-bag"></i> Cart
             </a>
@@ -244,6 +247,11 @@
 <div class="container">
 
     <form th:action="@{/checkout}" method="post">
+        <input type="hidden" name="productId"
+               th:value="${#lists.size(orderItems) == 1} ? ${orderItems[0].product.id} : ''" />
+
+        <input type="hidden" name="quantity"
+               th:value="${#lists.size(orderItems) == 1} ? ${orderItems[0].quantity} : '1'" />
 
         <div class="checkout-layout">
 
