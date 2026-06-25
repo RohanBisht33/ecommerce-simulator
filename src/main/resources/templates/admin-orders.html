@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexStore Admin — Pending Orders</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --brand-dark:   #0d0f14;
+      --brand-mid:    #161b27;
+      --brand-card:   #1c2233;
+      --brand-border: #2a3350;
+      --brand-accent: #e8f04a;
+      --brand-accent2:#4af0d4;
+      --brand-danger: #ff4c6a;
+      --text-primary: #eef0f6;
+      --text-muted:   #7a839e;
+      --radius-card:  16px;
+      --transition:   0.22s ease;
+      --bottom-nav-h: 64px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      background-color: var(--brand-dark);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      min-height: 100vh;
+      padding-bottom: 0;
+    }
+    @media (max-width: 767px) {
+      body { padding-bottom: var(--bottom-nav-h); }
+    }
+
+    /* ── Navbar ── */
+    .nex-navbar {
+      background: rgba(13,15,20,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--brand-border);
+      position: sticky; top: 0; z-index: 1030;
+      padding: 0.9rem 0;
+    }
+    /* Hide desktop navbar on mobile */
+    @media (max-width: 767px) { .nex-navbar { display: none; } }
+    .nex-logo {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.55rem;
+      letter-spacing: -0.5px; color: var(--text-primary); text-decoration: none;
+    }
+    .nex-logo span { color: var(--brand-accent); }
+    .admin-badge {
+      background: rgba(232,240,74,0.12); border: 1px solid rgba(232,240,74,0.35);
+      color: var(--brand-accent); font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.6px; text-transform: uppercase; padding: 3px 10px;
+      border-radius: 50px; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .nav-pill {
+      background: var(--brand-card); border: 1px solid var(--brand-border);
+      border-radius: 50px; padding: 0.35rem 0.9rem; color: var(--text-primary);
+      text-decoration: none; font-size: 0.88rem;
+      transition: border-color var(--transition), color var(--transition);
+      display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    }
+    .nav-pill:hover { border-color: var(--brand-accent); color: var(--brand-accent); }
+    .nav-pill.active { border-color: var(--brand-accent); color: var(--brand-accent); background: rgba(232,240,74,0.06); }
+
+    /* ── Hero ── */
+    .hero-strip {
+      background: linear-gradient(105deg, #0d0f14 30%, #111827);
+      border-bottom: 1px solid var(--brand-border);
+      padding: 2.5rem 0 2rem; position: relative; overflow: hidden;
+    }
+    .hero-strip::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 120% at 80% 50%, rgba(255,165,0,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,165,0,0.08); border: 1px solid rgba(255,165,0,0.25);
+      color: #ffa500; border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+      padding: 3px 10px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 0.75rem;
+    }
+    .hero-eyebrow i { animation: pulse-dot 1.4s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+    .hero-heading {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(1.8rem, 4vw, 2.9rem); line-height: 1.15; letter-spacing: -0.5px;
+    }
+    .hero-heading em { font-style: normal; color: #ffa500; }
+    .hero-sub { color: var(--text-muted); max-width: 480px; line-height: 1.6; font-weight: 300; }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+      padding: 1.75rem 0 0.25rem;
+    }
+    @media (max-width: 768px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .stats-row { grid-template-columns: 1fr; } }
+    .stat-card {
+      background: var(--brand-card); border: 1px solid var(--brand-border);
+      border-radius: var(--radius-card); padding: 1.1rem 1.4rem;
+      display: flex; align-items: center; gap: 1rem;
+      transition: border-color var(--transition);
+    }
+    .stat-card:hover { border-color: #3a4660; }
+    .stat-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .stat-icon.orange { background: rgba(255,165,0,0.1);   color: #ffa500;              border: 1px solid rgba(255,165,0,0.2); }
+    .stat-icon.teal   { background: rgba(74,240,212,0.1);  color: var(--brand-accent2); border: 1px solid rgba(74,240,212,0.2); }
+    .stat-icon.yellow { background: rgba(232,240,74,0.1);  color: var(--brand-accent);  border: 1px solid rgba(232,240,74,0.2); }
+    .stat-icon.red    { background: rgba(255,76,106,0.1);  color: var(--brand-danger);  border: 1px solid rgba(255,76,106,0.2); }
+    .stat-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; }
+    .stat-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.35rem; color: var(--text-primary); }
+
+    /* ── Section header ── */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.75rem; padding: 1.75rem 0 1rem;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 1.05rem; color: var(--text-primary);
+    }
+    .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-chip {
+      background: var(--brand-card); border: 1px solid var(--brand-border);
+      border-radius: 50px; color: var(--text-muted); font-size: 0.78rem;
+      padding: 4px 13px; cursor: pointer; transition: all var(--transition); text-decoration: none;
+    }
+    .filter-chip:hover, .filter-chip.active {
+      border-color: #ffa500; color: #ffa500; background: rgba(255,165,0,0.06);
+    }
+
+    /* ── Order card ── */
+    .order-card {
+      background: var(--brand-card); border: 1px solid var(--brand-border);
+      border-radius: var(--radius-card); overflow: hidden; margin-bottom: 0.85rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .order-card:hover { border-color: #3a4660; box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+
+    .order-card-top {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.5rem; padding: 0.9rem 1.4rem;
+      background: linear-gradient(90deg, rgba(22,27,39,0.8), rgba(13,15,20,0.4));
+      border-bottom: 1px solid var(--brand-border);
+    }
+    .order-top-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .order-number {
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem;
+      color: var(--brand-accent); display: flex; align-items: center; gap: 7px;
+    }
+    .customer-tag {
+      font-size: 0.8rem; color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .customer-tag strong { color: var(--text-primary); font-weight: 500; }
+
+    .order-status {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase; padding: 3px 11px; border-radius: 50px;
+    }
+    .status-pending    { background: rgba(255,165,0,0.1);   color: #ffa500;               border: 1px solid rgba(255,165,0,0.25); }
+    .status-processing { background: rgba(232,240,74,0.1);  color: var(--brand-accent);   border: 1px solid rgba(232,240,74,0.25); }
+    .status-shipped    { background: rgba(100,149,237,0.1); color: #6495ed;               border: 1px solid rgba(100,149,237,0.25); }
+    .status-delivered  { background: rgba(74,240,212,0.1);  color: var(--brand-accent2);  border: 1px solid rgba(74,240,212,0.25); }
+    .status-cancelled  { background: rgba(255,76,106,0.1);  color: var(--brand-danger);   border: 1px solid rgba(255,76,106,0.25); }
+
+    .order-card-body {
+      display: grid; grid-template-columns: 1fr 1fr 1fr auto;
+      align-items: center; gap: 1rem; padding: 1.1rem 1.4rem;
+    }
+    @media (max-width: 640px) {
+      .order-card-body { grid-template-columns: 1fr 1fr; }
+      .order-action { grid-column: 1 / -1; }
+    }
+    .order-meta-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
+    .order-meta-value { font-size: 0.92rem; color: var(--text-primary); font-weight: 500; }
+    .order-total-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.2rem; color: var(--brand-accent); }
+
+    /* ── Action buttons panel ── */
+    .order-actions-panel {
+      padding: 0 1.4rem 1.2rem;
+      display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+      border-top: 1px solid rgba(42,51,80,0.5);
+      margin-top: 0; padding-top: 1rem;
+    }
+
+    .order-items-strip {
+      padding: 0 1.4rem 0;
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+      padding-bottom: 0.85rem;
+    }
+    .items-label { font-size: 0.75rem; color: var(--text-muted); }
+    .item-thumb {
+      width: 38px; height: 38px; border-radius: 7px; background: var(--brand-mid);
+      border: 1px solid var(--brand-border); overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 0.75rem;
+    }
+    .item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .item-thumb-more {
+      width: 38px; height: 38px; border-radius: 7px;
+      background: rgba(232,240,74,0.06); border: 1px dashed rgba(232,240,74,0.3);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--brand-accent); font-size: 0.72rem; font-weight: 700;
+    }
+
+    .btn-view-order {
+      background: transparent; border: 1px solid var(--brand-border); color: var(--text-muted);
+      border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.82rem;
+      padding: 7px 16px; cursor: pointer; text-decoration: none;
+      transition: border-color var(--transition), color var(--transition);
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    .btn-view-order:hover { border-color: var(--brand-accent2); color: var(--brand-accent2); }
+
+    .btn-confirm {
+      background: var(--brand-accent2); border: none; color: var(--brand-dark);
+      border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem;
+      padding: 7px 18px; cursor: pointer;
+      transition: background var(--transition), transform 0.1s;
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    .btn-confirm:hover { background: #3dd8bc; }
+    .btn-confirm:active { transform: scale(0.97); }
+
+    .btn-reject {
+      background: transparent; border: 1px solid rgba(255,76,106,0.4); color: var(--brand-danger);
+      border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.82rem;
+      padding: 7px 16px; cursor: pointer;
+      transition: background var(--transition), border-color var(--transition);
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    .btn-reject:hover { background: rgba(255,76,106,0.08); border-color: var(--brand-danger); }
+
+    .btn-ship {
+      background: transparent; border: 1px solid rgba(100,149,237,0.4); color: #6495ed;
+      border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.82rem;
+      padding: 7px 16px; cursor: pointer;
+      transition: background var(--transition), border-color var(--transition);
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    .btn-ship:hover { background: rgba(100,149,237,0.08); border-color: #6495ed; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 5rem 1rem; }
+    .empty-icon-wrap {
+      width: 80px; height: 80px; border-radius: 20px;
+      background: var(--brand-card); border: 1px solid var(--brand-border);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: var(--text-muted); margin-bottom: 1.25rem;
+    }
+    .empty-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 0.4rem; }
+    .empty-sub { color: var(--text-muted); font-size: 0.88rem; max-width: 300px; margin: 0 auto; line-height: 1.6; }
+
+    /* ── Alert flash ── */
+    .nex-alert {
+      border-radius: 10px; font-size: 0.88rem; padding: 10px 16px;
+      display: flex; align-items: center; gap: 8px; margin-bottom: 1rem;
+    }
+    .nex-alert.success { background: rgba(74,240,212,0.08); border: 1px solid rgba(74,240,212,0.25); color: var(--brand-accent2); }
+    .nex-alert.error   { background: rgba(255,76,106,0.08); border: 1px solid rgba(255,76,106,0.3); color: var(--brand-danger); }
+
+    .nex-footer {
+      border-top: 1px solid var(--brand-border); padding: 1.5rem 0;
+      color: var(--text-muted); font-size: 0.82rem; text-align: center; margin-top: 3rem;
+    }
+    .nex-footer a { color: var(--brand-accent); text-decoration: none; }
+    @media (max-width: 767px) { .nex-footer { display: none; } }
+
+    /* ══════════════════════════════════════
+       MOBILE TOP STRIP (logo + icon buttons)
+    ══════════════════════════════════════ */
+    .mobile-topbar {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+      background: rgba(13,15,20,0.95);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--brand-border);
+      padding: 0.75rem 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    @media (max-width: 767px) { .mobile-topbar { display: flex; } }
+
+    .mobile-topbar .nex-logo { font-size: 1.3rem; }
+
+    .mobile-topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+    .mob-icon-btn {
+      background: var(--brand-card);
+      border: 1px solid var(--brand-border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem;
+      text-decoration: none;
+      position: relative;
+      cursor: pointer;
+      transition: border-color var(--transition), color var(--transition);
+    }
+    .mob-icon-btn:hover { border-color: var(--brand-accent); color: var(--brand-accent); }
+
+    .mob-cart-badge {
+      position: absolute;
+      top: -5px; right: -5px;
+      background: var(--brand-accent);
+      color: var(--brand-dark);
+      font-weight: 700;
+      font-size: 0.62rem;
+      border-radius: 50px;
+      padding: 1px 5px;
+      line-height: 1.4;
+    }
+
+    /* ══════════════════════════════════════
+       MOBILE BOTTOM NAVIGATION BAR
+    ══════════════════════════════════════ */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 1040;
+      height: var(--bottom-nav-h);
+      background: rgba(13,15,20,0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--brand-border);
+    }
+    @media (max-width: 767px) { .mobile-bottom-nav { display: flex; } }
+
+    .mob-nav-inner {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    .mob-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      transition: color var(--transition);
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+    }
+    .mob-nav-item i { font-size: 1.25rem; line-height: 1; }
+    .mob-nav-item:hover,
+    .mob-nav-item.active { color: var(--brand-accent); }
+    .mob-nav-item.active i { color: var(--brand-accent); }
+
+    .mob-nav-dot {
+      position: absolute;
+      top: 8px; right: calc(50% - 16px);
+      width: 6px; height: 6px;
+      background: var(--brand-accent);
+      border-radius: 50%;
+    }
+
+    .mob-nav-badge {
+      position: absolute;
+      top: 6px;
+      right: calc(50% - 20px);
+      background: var(--brand-accent);
+      color: var(--brand-dark);
+      font-weight: 700;
+      font-size: 0.6rem;
+      border-radius: 50px;
+      padding: 1px 5px;
+      line-height: 1.4;
+    }
+
+    /* Separator line between nav items */
+    .mob-nav-item + .mob-nav-item {
+      border-left: 1px solid rgba(42,51,80,0.5);
+    }
+
+    /* Sign out form inside bottom nav */
+    .mob-nav-form {
+      flex: 1;
+      display: flex;
+    }
+    .mob-nav-form button {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      border-left: 1px solid rgba(42,51,80,0.5);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: color var(--transition);
+    }
+    .mob-nav-form button i { font-size: 1.25rem; }
+    .mob-nav-form button:hover { color: var(--brand-danger); }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<nav class="nex-navbar">
+  <div class="container d-flex align-items-center justify-content-between">
+    <a href="/" class="nex-logo">Nex<span>Store</span></a>
+    <div class="d-flex align-items-center gap-3">
+      <span class="admin-badge"><i class="bi bi-shield-fill-check"></i> Admin</span>
+      <a href="/admin/orders" class="nav-pill active">
+        <i class="bi bi-clock-history"></i> Pending Orders
+      </a>
+      <a href="/admin/products" class="nav-pill">
+        <i class="bi bi-boxes"></i> Inventory
+      </a>
+      <a href="/" class="nav-pill">
+        <i class="bi bi-shop"></i> Storefront
+      </a>
+      <form th:action="@{/logout}" method="post" style="margin:0;">
+        <button type="submit" class="nav-pill" style="border:none;cursor:pointer;">
+          <i class="bi bi-box-arrow-right"></i>
+          <span sec:authentication="name">Admin</span> · Sign Out
+        </button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile top strip -->
+<div class="mobile-topbar">
+  <a href="/" class="nex-logo">Nex<span>Store</span></a>
+  <div class="mobile-topbar-actions">
+    <a href="/admin/products" class="mob-icon-btn" title="Inventory">
+      <i class="bi bi-boxes"></i>
+    </a>
+  </div>
+</div>
+
+<!-- ══ HERO ══ -->
+<section class="hero-strip">
+  <div class="container">
+    <div class="hero-eyebrow">
+      <i class="bi bi-circle-fill" style="font-size:0.55rem;"></i>
+      Requires Action
+    </div>
+    <h1 class="hero-heading">Pending <em>Orders.</em></h1>
+    <p class="hero-sub mt-2">All customer orders awaiting your confirmation. Confirm to proceed, or cancel to refund.</p>
+  </div>
+</section>
+
+<div class="container pb-4">
+
+  <!-- Flash messages -->
+  <div th:if="${successMessage}" class="nex-alert success mt-3">
+    <i class="bi bi-check-circle-fill"></i>
+    <span th:text="${successMessage}"></span>
+  </div>
+  <div th:if="${errorMessage}" class="nex-alert error mt-3">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span th:text="${errorMessage}"></span>
+  </div>
+
+  <!-- ── Stats ── -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="bi bi-hourglass-split"></i></div>
+      <div>
+        <div class="stat-label">Awaiting Confirm</div>
+        <div class="stat-value" th:text="${pendingCount}">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon yellow"><i class="bi bi-currency-dollar"></i></div>
+      <div>
+        <div class="stat-label">Pending Value</div>
+        <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(pendingValue, 1, 2)}">$0.00</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon teal"><i class="bi bi-bag-check-fill"></i></div>
+      <div>
+        <div class="stat-label">Confirmed Today</div>
+        <div class="stat-value" th:text="${confirmedToday}">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red"><i class="bi bi-x-circle-fill"></i></div>
+      <div>
+        <div class="stat-label">Cancelled Today</div>
+        <div class="stat-value" th:text="${cancelledToday}">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section header + filter ── -->
+  <div class="section-header">
+    <div class="section-title">
+      <i class="bi bi-list-ul me-2" style="color:var(--text-muted);"></i>
+      All Orders
+    </div>
+    <div class="filter-chips">
+      <a href="/admin/orders"                       class="filter-chip active">All</a>
+      <a href="/admin/orders?status=PENDING"        class="filter-chip">Pending</a>
+      <a href="/admin/orders?status=PROCESSING"     class="filter-chip">Processing</a>
+      <a href="/admin/orders?status=SHIPPED"        class="filter-chip">Shipped</a>
+      <a href="/admin/orders?status=DELIVERED"      class="filter-chip">Delivered</a>
+      <a href="/admin/orders?status=CANCELLED"      class="filter-chip">Cancelled</a>
+    </div>
+  </div>
+
+  <!-- ── Order cards ── -->
+  <div th:each="order : ${orders}" class="order-card">
+
+    <!-- Top bar -->
+    <div class="order-card-top">
+      <div class="order-top-left">
+        <div class="order-number">
+          <i class="bi bi-box-seam"></i>
+          <span th:text="${order.orderNumber}">NEX-00001</span>
+        </div>
+        <div class="customer-tag">
+          <i class="bi bi-person"></i>
+          <strong th:text="${order.user != null ? order.user.username : 'Unknown'}">customer</strong>
+        </div>
+      </div>
+      <span class="order-status"
+            th:classappend="${order.status == 'DELIVERED'}  ? 'status-delivered'  :
+                           (${order.status == 'PROCESSING'} ? 'status-processing' :
+                           (${order.status == 'SHIPPED'}    ? 'status-shipped'    :
+                           (${order.status == 'CANCELLED'}  ? 'status-cancelled'  :
+                                                              'status-pending')))"
+            th:text="${order.status}">PENDING</span>
+    </div>
+
+    <!-- Meta row -->
+    <div class="order-card-body">
+      <div>
+        <div class="order-meta-label">Date Placed</div>
+        <div class="order-meta-value"
+             th:text="${#temporals.format(order.orderDate, 'dd MMM yyyy, HH:mm')}">—</div>
+      </div>
+      <div>
+        <div class="order-meta-label">Items</div>
+        <div class="order-meta-value"
+             th:text="${#lists.size(order.orderItems)} + ' item' + (${#lists.size(order.orderItems)} != 1 ? 's' : '')">—</div>
+      </div>
+      <div>
+        <div class="order-meta-label">Order Total</div>
+        <div class="order-total-value"
+             th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">$0.00</div>
+      </div>
+      <div class="order-action">
+        <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn-view-order">
+          <i class="bi bi-eye"></i> Details
+        </a>
+      </div>
+    </div>
+
+    <!-- Item thumbnails -->
+    <div class="order-items-strip" th:if="${not #lists.isEmpty(order.orderItems)}">
+      <span class="items-label">Items:</span>
+      <div th:each="item,iStat : ${order.orderItems}" th:if="${iStat.index < 4}" class="item-thumb">
+        <img th:if="${item.product != null && item.product.imageUrl != null}"
+             th:src="${item.product.imageUrl}" th:alt="${item.product.name}" />
+        <i th:unless="${item.product != null && item.product.imageUrl != null}" class="bi bi-box"></i>
+      </div>
+      <div class="item-thumb-more" th:if="${#lists.size(order.orderItems) > 4}"
+           th:text="'+' + (${#lists.size(order.orderItems)} - 4)">+2</div>
+    </div>
+
+    <!-- Action buttons — context-sensitive by status -->
+    <div class="order-actions-panel">
+
+      <!-- PENDING: can confirm or cancel -->
+      <th:block th:if="${order.status == 'PENDING'}">
+        <form th:action="@{/admin/orders/{id}/confirm(id=${order.id})}" method="post" style="margin:0;">
+          <button type="submit" class="btn-confirm">
+            <i class="bi bi-check-lg"></i> Confirm Order
+          </button>
+        </form>
+        <form th:action="@{/admin/orders/{id}/cancel(id=${order.id})}" method="post" style="margin:0;">
+          <button type="submit" class="btn-reject">
+            <i class="bi bi-x-lg"></i> Cancel
+          </button>
+        </form>
+      </th:block>
+
+      <!-- PROCESSING: can mark as shipped or cancel -->
+      <th:block th:if="${order.status == 'PROCESSING'}">
+        <form th:action="@{/admin/orders/{id}/ship(id=${order.id})}" method="post" style="margin:0;">
+          <button type="submit" class="btn-ship">
+            <i class="bi bi-truck"></i> Mark Shipped
+          </button>
+        </form>
+        <form th:action="@{/admin/orders/{id}/cancel(id=${order.id})}" method="post" style="margin:0;">
+          <button type="submit" class="btn-reject">
+            <i class="bi bi-x-lg"></i> Cancel
+          </button>
+        </form>
+      </th:block>
+
+      <!-- SHIPPED: can mark as delivered -->
+      <th:block th:if="${order.status == 'SHIPPED'}">
+        <form th:action="@{/admin/orders/{id}/deliver(id=${order.id})}" method="post" style="margin:0;">
+          <button type="submit" class="btn-confirm">
+            <i class="bi bi-house-check"></i> Mark Delivered
+          </button>
+        </form>
+      </th:block>
+
+      <!-- DELIVERED / CANCELLED: terminal states, view only -->
+      <th:block th:if="${order.status == 'DELIVERED' or order.status == 'CANCELLED'}">
+        <span style="font-size:0.8rem;color:var(--text-muted);">
+          <i class="bi bi-lock" style="margin-right:4px;"></i>
+          <span th:text="${order.status == 'DELIVERED'} ? 'Order fulfilled — no further actions.' : 'Order cancelled.'"></span>
+        </span>
+      </th:block>
+
+    </div>
+
+  </div><!-- /order-card th:each -->
+
+  <!-- Empty state -->
+  <div class="empty-state" th:if="${#lists.isEmpty(orders)}">
+    <div class="empty-icon-wrap"><i class="bi bi-inbox"></i></div>
+    <div class="empty-title">All clear</div>
+    <p class="empty-sub">No orders match the current filter. Pending orders will appear here when customers check out.</p>
+  </div>
+
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer class="nex-footer">
+  <div class="container">
+    <span>NexStore &copy; 2026 &mdash; Admin Panel</span>
+    &nbsp;|&nbsp;
+    <a href="/actuator/health" id="healthLink">
+      <i class="bi bi-circle-fill" id="healthDot" style="font-size:0.55rem;vertical-align:middle;color:var(--text-muted);"></i>
+      Status
+    </a>
+  </div>
+</footer>
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-bottom-nav">
+  <div class="mob-nav-inner">
+    <a href="/" class="mob-nav-item">
+      <i class="bi bi-house-fill"></i>
+      <span>Home</span>
+    </a>
+    <a href="/admin/orders" class="mob-nav-item active">
+      <i class="bi bi-clock-history"></i>
+      <span>Orders</span>
+    </a>
+    <a href="/admin/products" class="mob-nav-item">
+      <i class="bi bi-boxes"></i>
+      <span>Inventory</span>
+    </a>
+    <form th:action="@{/logout}" method="post" class="mob-nav-form">
+      <button type="submit">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Sign Out</span>
+      </button>
+    </form>
+  </div>
+</nav>
+
+<script>
+  (function() {
+    const dot = document.getElementById('healthDot');
+    const link = document.getElementById('healthLink');
+    if (!dot || !link) return;
+    fetch('/actuator/health')
+            .then(r => r.json())
+            .then(data => {
+              const up = data && data.status === 'UP';
+              dot.style.color = up ? '#4af0d4' : '#ff4c6a';
+              link.title = up ? 'All systems operational' : 'Service degraded';
+            })
+            .catch(() => { dot.style.color = '#ff4c6a'; link.title = 'Unreachable'; });
+  })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

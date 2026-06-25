@@ -23,10 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found in database"));
 
         // 2. Translate it into Spring Security's required UserDetails format
+        // Your DB stores "ROLE_CUSTOMER" and "ROLE_ADMIN" — use authorities() which takes the value as-is
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
-                .roles(user.getRole()) // e.g., "CUSTOMER" or "ADMIN"
-                .build();
-    }
+                .authorities(user.getRole())  // "ROLE_CUSTOMER" stays "ROLE_CUSTOMER" ✓
+                .build();    }
 }

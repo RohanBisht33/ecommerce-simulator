@@ -1,10 +1,6 @@
 package com.ecommerce.service;
 
-import com.ecommerce.entity.Order;
-import com.ecommerce.entity.OrderItem;
-import com.ecommerce.entity.Product;
-import com.ecommerce.entity.CartItem;
-import com.ecommerce.entity.User;
+import com.ecommerce.entity.*;
 import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepository;
@@ -40,7 +36,7 @@ public class OrderService {
         Order order = new Order();
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         order.setOrderDate(LocalDateTime.now());
-        order.setStatus("PENDING");
+        order.setStatus(OrderStatus.PENDING);
         order.setTotalAmount(cartService.getSubTotal());
         order.setUser(user);
 
@@ -79,7 +75,7 @@ public class OrderService {
         Order order = new Order();
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         order.setOrderDate(LocalDateTime.now());
-        order.setStatus("PENDING");
+        order.setStatus(OrderStatus.PENDING);
         order.setUser(user);
         order.setTotalAmount(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
 

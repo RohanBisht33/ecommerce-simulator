@@ -41,11 +41,14 @@ public class Order {
         this.id = id;
     }
 
-    public String getStatus() {
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 
@@ -70,7 +73,6 @@ public class Order {
     private User user;
 
     private LocalDateTime orderDate;
-    private String status;
     private BigDecimal totalAmount;
 
     public List<OrderItem> getOrderItems() {

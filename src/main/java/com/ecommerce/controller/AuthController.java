@@ -74,7 +74,7 @@ public class AuthController {
 
         // 🟢 Pass: Securely hash raw string credentials and persist user entity state
         String encryptedPassword = passwordEncoder.encode(password);
-        User newUser = new User(username, encryptedPassword, "CUSTOMER");
+        User newUser = new User(username, encryptedPassword, "ROLE_CUSTOMER");
         userRepository.save(newUser);
 
         // 💬 Pass a success toast message across the post-redirect pipeline boundary
