@@ -1,0 +1,84 @@
+name: Build and Deploy to Azure
+
+# Runs automatically every time you push to the main branch.
+# You can also trigger it manually from the GitHub Actions tab.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: nexstoreregistry.azurecr.io
+  IMAGE_NAME: ecommerce-simulator
+  WEBAPP_NAME: nexstore
+  RESOURCE_GROUP: nexstore-india-rg
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Get your code onto the GitHub Actions machine
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Create a unique tag for this build (date + short commit hash)
+      #    e.g. 20260626-143022-a1b2c3d — guarantees no caching confusion
+      - name: Generate image tag
+        id: vars
+        run: echo "tag=$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      # 3. Set up Java so the Maven build step works
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # 4. Compile the project (catches build errors before we even touch Docker)
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      # 5. Log in to your Azure Container Registry
+      - name: Log in to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # 6. Build the Docker image, tagged twice: unique tag + latest
+      - name: Build Docker image
+        run: |
+          docker build --no-cache \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }} \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            .
+
+      # 7. Push both tags to Azure Container Registry
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      # 8. Log in to Azure so we can update the Web App
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # 9. Point the Web App at the new unique image tag (forces a real re-pull,
+      #    no ambiguity about whether Azure picked up the change)
+      - name: Update Web App image
+        run: |
+          az webapp config container set \
+            --name ${{ env.WEBAPP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --docker-custom-image-name ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}
+
+      # 10. Restart so the new container actually starts running
+      - name: Restart Web App
+        run: |
+          az webapp restart \
+            --name ${{ env.WEBAPP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }}
