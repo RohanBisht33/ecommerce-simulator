@@ -56,7 +56,6 @@ public class ProductController {
         // 2. Add to cart service (which you already defined in CartService)
         cartService.addProduct(product);
 
-        // 3. Feedback
         redirectAttributes.addFlashAttribute("successMessage", product.getName() + " added to cart!");
 
         return "redirect:/"; // Stays on the main index page
