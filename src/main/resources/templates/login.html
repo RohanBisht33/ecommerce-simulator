@@ -466,9 +466,9 @@
 <div class="mobile-topbar">
     <a href="/" class="nex-logo">Nex<span>Store</span></a>
     <div class="mobile-topbar-actions">
-        <a href="/cart" class="mob-icon-btn" title="Cart">
-            <i class="bi bi-bag"></i>
-        </a>
+        <!--        <a href="/cart" class="mob-icon-btn" title="Cart">-->
+        <!--            <i class="bi bi-bag"></i>-->
+        <!--        </a>-->
     </div>
 </div>
 
@@ -540,15 +540,19 @@
 
                     <div class="auth-divider">or</div>
 
-                    <a href="/" class="btn-auth-secondary">
-                        <i class="bi bi-bag-heart"></i>
-                        Continue Shopping as Guest
+                    <a href="/register" class="btn-auth-secondary">
+                        <i class="bi bi-person-plus"></i>
+                        Create an Account — it's free
                     </a>
 
-                    <div class="auth-switch">
-                        Don't have an account?
-                        <a href="/register">Create one — it's free</a>
+                    <div class="text-center mt-3">
+                        <a href="/" style="color:var(--text-muted);font-size:0.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:color var(--transition);"
+                           onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">
+                            <i class="bi bi-box-arrow-in-right" style="font-size:0.75rem;"></i>
+                            Continue as guest
+                        </a>
                     </div>
+                    
                 </div>
 
             </div><div class="trust-row">
@@ -576,10 +580,6 @@
         <a href="/" class="mob-nav-item">
             <i class="bi bi-house-fill"></i>
             <span>Home</span>
-        </a>
-        <a href="/cart" class="mob-nav-item">
-            <i class="bi bi-bag"></i>
-            <span>Cart</span>
         </a>
         <a href="/login" class="mob-nav-item active">
             <i class="bi bi-person"></i>

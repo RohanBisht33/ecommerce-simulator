@@ -354,6 +354,76 @@
     }
     .btn-primary-nex:hover { background: #d4da3e; color: var(--brand-dark); }
 
+    .filter-trigger-btn {
+      background: var(--brand-card);
+      border: 1px solid var(--brand-border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 7px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: border-color var(--transition), color var(--transition);
+      position: relative;
+    }
+    .filter-trigger-btn:hover,
+    .filter-trigger-btn.open {
+      border-color: var(--brand-accent);
+      color: var(--brand-accent);
+    }
+    .filter-trigger-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--brand-accent);
+      display: none;
+    }
+    .filter-trigger-btn.has-filter .filter-trigger-dot { display: inline-block; }
+    .filter-dropdown-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background: var(--brand-card);
+      border: 1px solid var(--brand-border);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+      padding: 8px;
+      min-width: 200px;
+      z-index: 200;
+    }
+    .filter-dropdown-panel.open { display: block; }
+    .filter-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: background var(--transition), color var(--transition);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .filter-option:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .filter-option.active { color: var(--brand-accent); background: rgba(232,240,74,0.08); font-weight: 600; }
+    .filter-option.active i { display: inline-block; }
+    .filter-option i { font-size: 0.85rem; display: none; }
+    /* Mobile: order card body responsive */
+    @media (max-width: 640px) {
+      .order-card-body {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.65rem !important;
+      }
+      .order-action { grid-column: 1 / -1; }
+      .order-card-top { padding: 0.75rem 1rem; }
+      .order-card-body { padding: 0.85rem 1rem; }
+      .order-items-strip { padding: 0 1rem 0.85rem; }
+    }
     .nex-footer {
       border-top: 1px solid var(--brand-border);
       padding: 1.5rem 0;
@@ -363,7 +433,77 @@
       margin-top: 3rem;
     }
     .nex-footer a { color: var(--brand-accent); text-decoration: none; }
-    @media (max-width: 767px) { .nex-footer { display: none; } }
+    @media (max-width: 767px) { .filter-trigger-btn {
+      background: var(--brand-card);
+      border: 1px solid var(--brand-border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 7px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: border-color var(--transition), color var(--transition);
+      position: relative;
+    }
+      .filter-trigger-btn:hover,
+      .filter-trigger-btn.open {
+        border-color: var(--brand-accent);
+        color: var(--brand-accent);
+      }
+      .filter-trigger-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--brand-accent);
+        display: none;
+      }
+      .filter-trigger-btn.has-filter .filter-trigger-dot { display: inline-block; }
+      .filter-dropdown-panel {
+        display: none;
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        background: var(--brand-card);
+        border: 1px solid var(--brand-border);
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+        padding: 8px;
+        min-width: 200px;
+        z-index: 200;
+      }
+      .filter-dropdown-panel.open { display: block; }
+      .filter-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 9px 12px;
+        border-radius: 8px;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: background var(--transition), color var(--transition);
+        -webkit-tap-highlight-color: transparent;
+      }
+      .filter-option:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+      .filter-option.active { color: var(--brand-accent); background: rgba(232,240,74,0.08); font-weight: 600; }
+      .filter-option.active i { display: inline-block; }
+      .filter-option i { font-size: 0.85rem; display: none; }
+      /* Mobile: order card body responsive */
+      @media (max-width: 640px) {
+        .order-card-body {
+          grid-template-columns: 1fr 1fr !important;
+          gap: 0.65rem !important;
+        }
+        .order-action { grid-column: 1 / -1; }
+        .order-card-top { padding: 0.75rem 1rem; }
+        .order-card-body { padding: 0.85rem 1rem; }
+        .order-items-strip { padding: 0 1rem 0.85rem; }
+      }
+      .nex-footer { display: none; } }
 
     /* ══════════════════════════════════════
        MOBILE TOP STRIP (logo + icon buttons)
@@ -536,7 +676,7 @@
         <i class="bi bi-person"></i> Sign In
       </a>
       <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="margin:0;">
-        <button type="submit" class="cart-pill" style="background:none;border-color:var(--brand-border);">
+        <button type="submit" class="cart-pill" onclick="confirmSignOut(this.form)" style="background:none;border-color:var(--brand-border);">
           <i class="bi bi-box-arrow-right"></i>
           <span sec:authentication="name">User</span> · Sign Out
         </button>
@@ -549,12 +689,12 @@
 <div class="mobile-topbar">
   <a href="/" class="nex-logo">Nex<span>Store</span></a>
   <div class="mobile-topbar-actions">
-    <a href="/cart" class="mob-icon-btn" title="Cart">
-      <i class="bi bi-bag"></i>
-    </a>
-    <a href="/login" sec:authorize="isAnonymous()" class="mob-icon-btn" title="Sign In">
-      <i class="bi bi-person"></i>
-    </a>
+    <!--    <a href="/cart" class="mob-icon-btn" title="Cart">-->
+    <!--      <i class="bi bi-bag"></i>-->
+    <!--    </a>-->
+    <!--    <a href="/login" sec:authorize="isAnonymous()" class="mob-icon-btn" title="Sign In">-->
+    <!--      <i class="bi bi-person"></i>-->
+    <!--    </a>-->
   </div>
 </div>
 
@@ -571,7 +711,7 @@
 
 <div class="container pb-4">
 
-  <div class="stats-row" th:unless="${#lists.isEmpty(orders)}">
+  <div class="stats-row d-none d-md-flex" th:unless="${#lists.isEmpty(orders)}">
     <div class="stat-card">
       <div class="stat-icon teal"><i class="bi bi-bag-check-fill"></i></div>
       <div>
@@ -608,7 +748,7 @@
       <i class="bi bi-list-ul me-2" style="color:var(--text-muted);"></i>
       All Orders
     </div>
-    <div class="filter-chips">
+    <div class="filter-chips d-none d-md-flex" id="desktopFilterChips">
       <a href="/orders"                     class="filter-chip active">All</a>
       <a href="/orders?status=processing"   class="filter-chip">Processing</a>
       <a href="/orders?status=shipped"      class="filter-chip">Shipped</a>
@@ -738,7 +878,7 @@
     </a>
 
     <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="mob-nav-form">
-      <button type="submit">
+      <button type="submit" onclick="confirmSignOut(this.form)">
         <i class="bi bi-box-arrow-right"></i>
         <span>Sign Out</span>
       </button>
@@ -760,6 +900,45 @@
               link.title = up ? 'All systems operational' : 'Service degraded';
             })
             .catch(() => { dot.style.color = '#ff4c6a'; link.title = 'Unreachable'; });
+  })();
+</script>
+<script>
+  /* ── Sign Out Confirmation ── */
+  function confirmSignOut(form) {
+    if (confirm('Are you sure you want to sign out?')) {
+      form.submit();
+    }
+  }
+</script>
+<script>
+  function toggleOrderFilterPanel() {
+    const panel = document.getElementById('orderFilterPanel');
+    const btn   = document.getElementById('orderFilterBtn');
+    panel.classList.toggle('open');
+    btn.classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    const panel = document.getElementById('orderFilterPanel');
+    const btn   = document.getElementById('orderFilterBtn');
+    if (!panel || !btn) return;
+    if (!panel.contains(e.target) && !btn.contains(e.target)) {
+      panel.classList.remove('open');
+      btn.classList.remove('open');
+    }
+  });
+  // Highlight active filter
+  (function() {
+    const status = new URLSearchParams(window.location.search).get('status');
+    const label  = status ? status.charAt(0).toUpperCase() + status.slice(1) : 'All';
+    const el = document.getElementById('mobFilterLabel');
+    if (el) el.textContent = label;
+    document.querySelectorAll('.filter-option').forEach(opt => {
+      if (opt.dataset.label === label) {
+        opt.classList.add('active');
+        const dot = document.getElementById('orderFilterDot');
+        if (dot && label !== 'All') dot.parentElement.classList.add('has-filter');
+      }
+    });
   })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
