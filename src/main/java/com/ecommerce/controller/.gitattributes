@@ -1,0 +1,5 @@
+# Exclude all HTML files from the language statistics
+*.html linguist-vendored
+
+# Alternatively, if you want them treated strictly as documentation:
+# *.html linguist-documentation

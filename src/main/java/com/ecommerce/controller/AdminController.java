@@ -6,13 +6,13 @@ import com.ecommerce.entity.Product;
 import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepository;
+import com.ecommerce.service.AzureBlobStorageService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -21,10 +21,12 @@ public class AdminController {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final AzureBlobStorageService blobStorageService;
 
-    public AdminController(ProductRepository productRepository, OrderRepository orderRepository){
+    public AdminController(ProductRepository productRepository, OrderRepository orderRepository, AzureBlobStorageService blobStorageService){
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.blobStorageService = blobStorageService;
     }
 
     @GetMapping("/orders")
@@ -57,8 +59,23 @@ public class AdminController {
     }
 
     @PostMapping("/products/add")
-    public String saveProduct(Product product){
-        productRepository.save(product);
+    public String saveProduct(Product product, @RequestPart("imageFile") MultipartFile imageFile) {
+        try {
+            // 1. Stream the file binary data directly to Azure Blob Storage
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String imageUrl = blobStorageService.uploadImage(imageFile);
+
+                // 2. Assign the permanent cloud URL to our domain model
+                product.setImageUrl(imageUrl);
+            }
+
+            // 3. Commit the updated product record into PostgreSQL
+            productRepository.save(product);
+
+        } catch (IOException e) {
+            // In production, log this error securely and handle the failure boundary gracefully
+            return "redirect:/admin/products?error=upload_failed";
+        }
 
         return "redirect:/admin/products";
     }

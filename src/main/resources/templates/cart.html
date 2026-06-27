@@ -568,7 +568,7 @@
         <i class="bi bi-person"></i> Sign In
       </a>
       <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="margin:0;">
-        <button type="submit" class="nex-nav-link" onclick="confirmSignOut(this.form)" style="background:none;border:none;cursor:pointer;padding:0;">
+        <button type="button" class="nex-nav-link" onclick="confirmSignOut(this.form)" style="background:none;border:none;cursor:pointer;padding:0;">
           <i class="bi bi-box-arrow-right"></i>
           <span sec:authentication="name">User</span> · Sign Out
         </button>
@@ -838,7 +838,7 @@
     </a>
 
     <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="mob-nav-form">
-      <button type="submit" onclick="confirmSignOut(this.form)">
+      <button type="button" onclick="confirmSignOut(this.form)">
         <i class="bi bi-box-arrow-right"></i>
         <span>Sign Out</span>
       </button>
@@ -847,13 +847,79 @@
   </div>
 </nav>
 
+
+<!-- ══ SIGN-OUT CONFIRM MODAL ══ -->
+<div id="signOutModal" style="
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:rgba(0,0,0,0.65); backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  align-items:center; justify-content:center; padding:1rem;">
+  <div style="
+    background:var(--brand-card); border:1px solid var(--brand-border);
+    border-radius:var(--radius-card); width:100%; max-width:360px;
+    padding:2rem; text-align:center;
+    box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+    <div style="
+      width:56px; height:56px; border-radius:14px; margin:0 auto 1.1rem;
+      background:rgba(255,76,106,0.1); border:1px solid rgba(255,76,106,0.25);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.5rem; color:var(--brand-danger);">
+      <i class="bi bi-box-arrow-right"></i>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;margin-bottom:0.4rem;">
+      Sign out?
+    </div>
+    <p style="color:var(--text-muted);font-size:0.85rem;line-height:1.6;margin-bottom:1.6rem;">
+      You'll need to sign back in to access your cart and orders.
+    </p>
+    <div style="display:flex;gap:0.6rem;">
+      <button type="button" onclick="closeSignOutModal()" style="
+        flex:1; background:transparent; border:1px solid var(--brand-border);
+        border-radius:8px; color:var(--text-muted); font-family:'DM Sans',sans-serif;
+        font-size:0.9rem; padding:10px; cursor:pointer;
+        transition:border-color 0.22s, color 0.22s;"
+              onmouseover="this.style.borderColor='var(--brand-accent2)';this.style.color='var(--brand-accent2)'"
+              onmouseout="this.style.borderColor='var(--brand-border)';this.style.color='var(--text-muted)'">
+        Stay
+      </button>
+      <button type="button" onclick="doSignOut()" style="
+        flex:1; background:var(--brand-danger); border:none;
+        border-radius:8px; color:#fff; font-family:'Syne',sans-serif;
+        font-weight:700; font-size:0.9rem; padding:10px; cursor:pointer;
+        display:flex; align-items:center; justify-content:center; gap:6px;
+        transition:background 0.22s, transform 0.1s;"
+              onmouseover="this.style.background='#e03555'"
+              onmouseout="this.style.background='var(--brand-danger)'"
+              onmousedown="this.style.transform='scale(0.97)'"
+              onmouseup="this.style.transform='scale(1)'">
+        <i class="bi bi-box-arrow-right"></i> Sign Out
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
-  /* ── Sign Out Confirmation ── */
+  let _signOutForm = null;
   function confirmSignOut(form) {
-    if (confirm('Are you sure you want to sign out?')) {
-      form.submit();
-    }
+    _signOutForm = form;
+    const modal = document.getElementById('signOutModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
   }
+  function closeSignOutModal() {
+    document.getElementById('signOutModal').style.display = 'none';
+    document.body.style.overflow = '';
+    _signOutForm = null;
+  }
+  function doSignOut() {
+    if (_signOutForm) _signOutForm.submit();
+  }
+  document.getElementById('signOutModal').addEventListener('click', function(e) {
+    if (e.target === this) closeSignOutModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSignOutModal();
+  });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
