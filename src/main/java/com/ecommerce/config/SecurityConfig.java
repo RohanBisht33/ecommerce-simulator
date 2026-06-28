@@ -19,8 +19,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/cart/**", "/login", "/register", "/css/**", "/js/**").permitAll()
-                        .requestMatchers("/checkout", "/buy/now/**").authenticated()
+                        .requestMatchers("/", "/login", "/register", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/checkout", "/buy/now/**", "/cart/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .formLogin(login -> login

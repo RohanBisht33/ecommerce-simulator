@@ -1039,14 +1039,16 @@
       <div class="product-col" th:each="product : ${products}">
         <div class="product-card">
 
-          <!-- Image -->
-          <div class="product-img-wrap">
+          <!-- Image — clicking navigates to product detail page -->
+          <a th:href="@{/products/{id}(id=${product.id})}"
+             class="product-img-wrap"
+             style="display:block;text-decoration:none;">
             <img th:src="${product.imageUrl}" th:alt="${product.name}" loading="lazy" />
 
             <div class="badge-overlay">
-              <span class="badge-sale"
-                    th:if="${product.discountPercent > 0}"
-                    th:text="${product.discountPercent} + '% OFF'"></span>
+          <span class="badge-sale"
+                th:if="${product.discountPercent > 0}"
+                th:text="${product.discountPercent} + '% OFF'"></span>
               <span class="badge-stock-out"
                     th:if="${product.stock <= 0}">Out of Stock</span>
               <span class="badge-stock-low"
@@ -1057,13 +1059,17 @@
             <div class="sold-out-overlay" th:if="${product.stock <= 0}">
               <span>Sold Out</span>
             </div>
-          </div>
+          </a>
 
           <!-- Card body -->
           <div class="product-body">
             <div class="product-category" th:text="${product.category}"></div>
-            <div class="product-name"     th:text="${product.name}"></div>
-            <div class="product-sku"      th:text="'SKU: ' + ${product.sku}"></div>
+            <a th:href="@{/products/{id}(id=${product.id})}"
+               class="product-name"
+               style="text-decoration:none;color:inherit;display:block;">
+              <span th:text="${product.name}"></span>
+            </a>
+            <div class="product-sku" th:text="'SKU: ' + ${product.sku}"></div>
 
             <div class="price-row">
               <span class="price-current"

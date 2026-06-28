@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1. 0" />
+    <title th:text="${product.name} + ' — NexStore'">Product — NexStore</title>
+    <meta property="og:title"       th:content="${product.name}" />
+    <meta property="og:description" th:content="'Buy ' + ${product.name} + ' at NexStore. Fast shipping. Real-time stock.'" />
+    <meta property="og:image"       th:content="${product.imageUrl}" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        /* ═══════════════════════════════════════
+           DESIGN TOKENS
+        ═══════════════════════════════════════ */
+        :root {
+            --brand-dark:   #0d0f14;
+            --brand-mid:    #161b27;
+            --brand-card:   #1c2233;
+            --brand-border: #2a3350;
+            --brand-accent: #e8f04a;
+            --brand-accent2:#4af0d4;
+            --brand-danger: #ff4c6a;
+            --text-primary: #eef0f6;
+            --text-muted:   #7a839e;
+            --radius-card:  16px;
+            --transition:   0.22s ease;
+            --bottom-nav-h: 64px;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html { height: 100%; }
+        body {
+            background-color: var(--brand-dark);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            min-height: 100vh;
+            /* FIX #10: prevent black flash when navigating back */
+            background-attachment: fixed;
+        }
+        @media (max-width: 767px) { body { padding-bottom: var(--bottom-nav-h); } }
+
+        /* ═══════════════════════════════════════
+           DESKTOP NAVBAR
+        ═══════════════════════════════════════ */
+        .nex-navbar {
+            background: rgba(13,15,20,0.9);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--brand-border);
+            position: sticky; top: 0; z-index: 1030;
+            padding: 0.9rem 0;
+        }
+        @media (max-width: 767px) { .nex-navbar { display: none; } }
+
+        .nex-logo {
+            font-family: 'Syne', sans-serif; font-weight: 800;
+            font-size: 1.55rem; letter-spacing: -0.5px;
+            color: var(--text-primary); text-decoration: none;
+        }
+        .nex-logo span { color: var(--brand-accent); }
+
+        .cart-pill {
+            background: var(--brand-card); border: 1px solid var(--brand-border);
+            border-radius: 50px; padding: 0.35rem 0.9rem;
+            color: var(--text-primary); text-decoration: none;
+            font-size: 0.88rem; transition: border-color var(--transition), color var(--transition);
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+        .cart-pill:hover { border-color: var(--brand-accent); color: var(--brand-accent); }
+        .cart-badge {
+            background: var(--brand-accent); color: var(--brand-dark);
+            font-weight: 700; font-size: 0.72rem; border-radius: 50px; padding: 1px 7px;
+        }
+
+        /* ═══════════════════════════════════════
+           MOBILE TOP STRIP
+        ═══════════════════════════════════════ */
+        .mobile-topbar {
+            display: none; position: sticky; top: 0; z-index: 1030;
+            background: rgba(13,15,20,0.95);
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--brand-border);
+            padding: 0.75rem 1rem;
+            align-items: center; justify-content: space-between;
+        }
+        @media (max-width: 767px) { .mobile-topbar { display: flex; } }
+        .mobile-topbar .nex-logo { font-size: 1.3rem; }
+        .mobile-topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+        .mob-icon-btn {
+            background: var(--brand-card); border: 1px solid var(--brand-border);
+            border-radius: 10px; color: var(--text-primary);
+            width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.05rem; text-decoration: none; position: relative;
+            cursor: pointer; transition: border-color var(--transition), color var(--transition);
+        }
+        .mob-icon-btn:hover { border-color: var(--brand-accent); color: var(--brand-accent); }
+        .mob-cart-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--brand-accent); color: var(--brand-dark);
+            font-weight: 700; font-size: 0.62rem; border-radius: 50px;
+            padding: 1px 5px; line-height: 1.4;
+        }
+
+        /* ═══════════════════════════════════════
+           MOBILE BOTTOM NAV
+        ═══════════════════════════════════════ */
+        .mobile-bottom-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 1040; height: var(--bottom-nav-h);
+            background: rgba(13,15,20,0.97);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--brand-border);
+        }
+        @media (max-width: 767px) { .mobile-bottom-nav { display: flex; } }
+        .mob-nav-inner { display: flex; width: 100%; height: 100%; }
+        .mob-nav-item {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 3px;
+            text-decoration: none; color: var(--text-muted);
+            font-size: 0.62rem; font-weight: 500; letter-spacing: 0.3px;
+            transition: color var(--transition);
+            border: none; background: none; cursor: pointer; padding: 0;
+            -webkit-tap-highlight-color: transparent; position: relative;
+        }
+        .mob-nav-item i { font-size: 1.25rem; line-height: 1; }
+        .mob-nav-item:hover, .mob-nav-item.active { color: var(--brand-accent); }
+        .mob-nav-item + .mob-nav-item { border-left: 1px solid rgba(42,51,80,0.5); }
+        .mob-nav-badge {
+            position: absolute; top: 6px; right: calc(50% - 20px);
+            background: var(--brand-accent); color: var(--brand-dark);
+            font-weight: 700; font-size: 0.6rem; border-radius: 50px;
+            padding: 1px 5px; line-height: 1.4;
+        }
+        .mob-nav-form { flex: 1; display: flex; }
+        .mob-nav-form button {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 3px;
+            font-size: 0.62rem; font-weight: 500; letter-spacing: 0.3px;
+            color: var(--text-muted); background: none; border: none;
+            border-left: 1px solid rgba(42,51,80,0.5);
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            transition: color var(--transition);
+        }
+        .mob-nav-form button i { font-size: 1.25rem; }
+        .mob-nav-form button:hover { color: var(--brand-danger); }
+
+        /* ═══════════════════════════════════════
+           BREADCRUMB — FIX #5 & #8
+           Desktop: NexStore > Category > Product
+           Mobile: hidden entirely
+        ═══════════════════════════════════════ */
+        .breadcrumb-strip {
+            border-bottom: 1px solid var(--brand-border);
+            background: var(--brand-mid); padding: 0.65rem 0;
+        }
+        /* FIX #8: hide breadcrumb on mobile completely */
+        @media (max-width: 767px) { .breadcrumb-strip { display: none; } }
+
+        .breadcrumb-strip .breadcrumb {
+            margin: 0; padding: 0; font-size: 0.8rem;
+            --bs-breadcrumb-divider-color: var(--text-muted);
+            --bs-breadcrumb-item-active-color: var(--text-primary);
+        }
+        .breadcrumb-strip .breadcrumb-item a {
+            color: var(--text-muted); text-decoration: none;
+            transition: color var(--transition);
+        }
+        .breadcrumb-strip .breadcrumb-item a:hover { color: var(--brand-accent); }
+        .breadcrumb-strip .breadcrumb-item + .breadcrumb-item::before { color: var(--brand-border); }
+        .breadcrumb-strip .breadcrumb-item.active {
+            max-width: 40vw; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+        }
+
+        /* ═══════════════════════════════════════
+           ALERTS
+        ═══════════════════════════════════════ */
+        .flash-alert {
+            background: rgba(232,240,74,0.08); border: 1px solid rgba(232,240,74,0.25);
+            color: var(--brand-accent); border-radius: 10px; font-size: 0.88rem;
+            padding: 10px 16px; display: flex; align-items: center; gap: 8px;
+        }
+        .error-alert {
+            background: rgba(255,76,106,0.1); color: var(--brand-danger);
+            border-radius: 10px; border: 1px solid rgba(255,76,106,0.25);
+            padding: 10px 16px; font-size: 0.88rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* ═══════════════════════════════════════
+           PRODUCT DETAIL LAYOUT
+        ═══════════════════════════════════════ */
+        .product-detail-section { padding: 2.5rem 0 4rem; }
+        @media (max-width: 767px) { .product-detail-section { padding: 1.25rem 0 2rem; } }
+
+        /* Image panel */
+        .product-image-panel {
+            position: relative; background: var(--brand-card);
+            border: 1px solid var(--brand-border);
+            border-radius: var(--radius-card); overflow: hidden; aspect-ratio: 1 / 1;
+        }
+        .product-image-panel img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.4s ease; display: block;
+        }
+        .product-image-panel:hover img { transform: scale(1.03); }
+
+        .img-badge-tl {
+            position: absolute; top: 14px; left: 14px;
+            display: flex; flex-direction: column; gap: 6px; z-index: 2;
+        }
+        .badge-sale {
+            background: var(--brand-danger); color: #fff;
+            font-size: 0.7rem; font-weight: 700;
+            letter-spacing: 0.6px; text-transform: uppercase;
+            padding: 3px 10px; border-radius: 6px;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .badge-sale i { animation: pulse-dot 1.4s ease-in-out infinite; }
+        .badge-oos-overlay {
+            position: absolute; inset: 0; z-index: 3;
+            background: rgba(13,15,20,0.65);
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+        .badge-oos-overlay span {
+            font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+            letter-spacing: 2.5px; text-transform: uppercase;
+            color: var(--brand-danger); border: 2px solid var(--brand-danger);
+            padding: 6px 18px; border-radius: 6px; background: rgba(13,15,20,0.55);
+        }
+        @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* Info panel */
+        .product-info-panel { display: flex; flex-direction: column; gap: 1.25rem; }
+        @media (max-width: 767px) { .product-info-panel { gap: 1rem; margin-top: 1.25rem; } }
+
+        .product-meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .product-category-tag {
+            font-size: 0.7rem; color: var(--brand-accent2);
+            text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600;
+            background: rgba(74,240,212,0.08); border: 1px solid rgba(74,240,212,0.2);
+            padding: 3px 10px; border-radius: 50px;
+        }
+        .product-sku-tag {
+            font-size: 0.72rem; color: var(--text-muted);
+            background: var(--brand-mid); border: 1px solid var(--brand-border);
+            padding: 3px 9px; border-radius: 50px;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .product-detail-name {
+            font-family: 'Syne', sans-serif; font-weight: 800;
+            font-size: clamp(1.45rem, 4vw, 2.2rem);
+            line-height: 1.18; letter-spacing: -0.5px; color: var(--text-primary); margin: 0;
+        }
+        .stock-status-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .status-pill-instock {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(74,240,212,0.1); border: 1px solid rgba(74,240,212,0.3);
+            color: var(--brand-accent2); font-size: 0.78rem; font-weight: 600;
+            padding: 4px 12px; border-radius: 50px;
+        }
+        .status-pill-instock i { font-size: 0.65rem; animation: pulse-dot 1.8s ease-in-out infinite; }
+        .status-pill-oos {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,76,106,0.1); border: 1px solid rgba(255,76,106,0.3);
+            color: var(--brand-danger); font-size: 0.78rem; font-weight: 600;
+            padding: 4px 12px; border-radius: 50px;
+        }
+        .stock-qty-label { font-size: 0.78rem; color: var(--text-muted); }
+        .stock-qty-label strong { color: var(--text-primary); font-weight: 600; }
+
+        .info-divider { height: 1px; background: var(--brand-border); border: none; margin: 0; }
+
+        .price-block { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+        .price-current-lg {
+            font-family: 'Syne', sans-serif; font-weight: 800;
+            font-size: 2rem; color: var(--brand-accent); line-height: 1;
+        }
+        .price-original-lg {
+            font-size: 1.05rem; color: var(--text-muted); text-decoration: line-through;
+        }
+        .discount-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(255,76,106,0.12); border: 1px solid rgba(255,76,106,0.3);
+            color: var(--brand-danger); font-size: 0.75rem; font-weight: 700;
+            padding: 3px 9px; border-radius: 50px; text-transform: uppercase;
+        }
+
+        .stock-meter-header {
+            display: flex; justify-content: space-between;
+            font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;
+        }
+        .stock-meter-header span:last-child { font-weight: 600; color: var(--text-primary); }
+        .stock-bar { height: 5px; background: var(--brand-border); border-radius: 99px; overflow: hidden; }
+        .stock-fill { height: 100%; border-radius: 99px; background: var(--brand-accent2); transition: width 0.4s ease; }
+        .stock-fill.low  { background: #ffa500; }
+        .stock-fill.out  { background: var(--brand-danger); width: 100% !important; }
+
+        /* Checkout card */
+        .checkout-card {
+            background: var(--brand-card); border: 1px solid var(--brand-border);
+            border-radius: var(--radius-card); padding: 1.4rem 1.5rem;
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+        @media (max-width: 767px) { .checkout-card { padding: 1.1rem 1rem; } }
+        .checkout-card-title {
+            font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);
+        }
+
+        /* FIX #7: Admin view — read-only info panel, no purchase controls */
+        .admin-purchase-block {
+            background: rgba(232,240,74,0.05);
+            border: 1px dashed rgba(232,240,74,0.25);
+            border-radius: 10px; padding: 1rem 1.2rem;
+            display: flex; align-items: center; gap: 10px;
+            color: var(--text-muted); font-size: 0.84rem;
+        }
+        .admin-purchase-block i { color: var(--brand-accent); font-size: 1.1rem; flex-shrink: 0; }
+
+        /* Quantity selector — FIX #2 */
+        .qty-selector {
+            display: flex; align-items: center;
+            background: var(--brand-mid); border: 1px solid var(--brand-border);
+            border-radius: 10px; overflow: hidden; width: fit-content;
+        }
+        .qty-btn {
+            background: none; border: none; color: var(--text-muted);
+            width: 40px; height: 42px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.05rem; cursor: pointer;
+            transition: color var(--transition), background var(--transition);
+            -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+        }
+        .qty-btn:hover:not(:disabled) { color: var(--brand-accent); background: rgba(232,240,74,0.06); }
+        .qty-btn:disabled { color: var(--brand-border); cursor: not-allowed; }
+        .qty-input {
+            background: none; border: none; color: var(--text-primary);
+            font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+            width: 52px; text-align: center;
+            -moz-appearance: textfield; outline: none; padding: 0;
+        }
+        .qty-input::-webkit-outer-spin-button,
+        .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .qty-divider { width: 1px; height: 28px; background: var(--brand-border); flex-shrink: 0; }
+
+        /* CTA buttons */
+        .btn-add-cart {
+            background: var(--brand-accent); color: var(--brand-dark);
+            border: none; border-radius: 10px;
+            font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.92rem;
+            padding: 13px 20px; cursor: pointer; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: background var(--transition), transform 0.1s, box-shadow var(--transition);
+            -webkit-tap-highlight-color: transparent; text-decoration: none;
+        }
+        .btn-add-cart:hover:not(:disabled) { background: #d4da3e; box-shadow: 0 8px 28px rgba(232,240,74,0.22); }
+        .btn-add-cart:active:not(:disabled) { transform: scale(0.98); }
+        .btn-add-cart:disabled { background: var(--brand-border); color: var(--text-muted); cursor: not-allowed; }
+
+        .btn-buy-now {
+            background: transparent; color: var(--brand-accent2);
+            border: 1px solid rgba(74,240,212,0.4); border-radius: 10px;
+            font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.9rem;
+            padding: 12px 20px; cursor: pointer; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: background var(--transition), border-color var(--transition);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-buy-now:hover:not(:disabled) { background: rgba(74,240,212,0.08); border-color: var(--brand-accent2); }
+        .btn-buy-now:disabled { border-color: var(--brand-border); color: var(--text-muted); cursor: not-allowed; }
+
+        /* Trust items */
+        .trust-row { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; }
+        .trust-item {
+            flex: 1; min-width: 72px; background: var(--brand-mid);
+            border: 1px solid var(--brand-border); border-radius: 10px;
+            padding: 10px 8px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 5px; text-align: center;
+        }
+        .trust-item i { font-size: 1.2rem; color: var(--brand-accent); }
+        .trust-item span { font-size: 0.68rem; color: var(--text-muted); line-height: 1.3; }
+
+        /* ═══════════════════════════════════════
+           TABS — FIX #4, #9
+        ═══════════════════════════════════════ */
+        .product-tabs-section {
+            padding: 2.5rem 0; border-top: 1px solid var(--brand-border);
+        }
+        @media (max-width: 767px) { .product-tabs-section { padding: 1.5rem 0; } }
+
+        /* FIX #9: on mobile the tab bar scrolls horizontally, font slightly smaller */
+        .nex-tabs {
+            display: flex; gap: 0;
+            border-bottom: 1px solid var(--brand-border);
+            margin-bottom: 1.5rem;
+            overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+        }
+        .nex-tabs::-webkit-scrollbar { display: none; }
+
+        .nex-tab-btn {
+            background: none; border: none; color: var(--text-muted);
+            font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500;
+            /* FIX #4: enough padding so underline indicator is clearly visible */
+            padding: 12px 20px 11px;
+            cursor: pointer; white-space: nowrap; position: relative;
+            transition: color var(--transition);
+            -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+        }
+        /* FIX #4: active underline — 2px solid accent, bottom of button */
+        .nex-tab-btn::after {
+            content: '';
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 2px; background: var(--brand-accent);
+            transform: scaleX(0); transform-origin: left;
+            transition: transform var(--transition);
+            border-radius: 2px 2px 0 0;
+        }
+        /* FIX #4: active state — accent colour + underline */
+        .nex-tab-btn.active { color: var(--brand-accent); }
+        .nex-tab-btn.active::after { transform: scaleX(1); }
+
+        /* FIX #9: on mobile reduce padding so all three tabs fit */
+        @media (max-width: 480px) {
+            .nex-tab-btn { font-size: 0.8rem; padding: 10px 14px 9px; }
+            .nex-tab-btn i { display: none; }
+        }
+
+        .nex-tab-panel { display: none; }
+        .nex-tab-panel.active { display: block; }
+
+        .tab-prose {
+            color: var(--text-muted); font-weight: 300; line-height: 1.8;
+            font-size: 0.92rem; max-width: 720px;
+        }
+        .tab-prose p { margin-bottom: 0.9rem; }
+        .tab-prose p:last-child { margin-bottom: 0; }
+
+        /* FIX #9: specs table scrolls on tiny screens */
+        .specs-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .specs-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 280px; }
+        .specs-table tr { border-bottom: 1px solid var(--brand-border); }
+        .specs-table tr:last-child { border-bottom: none; }
+        .specs-table td { padding: 10px 0; vertical-align: top; }
+        .specs-table td:first-child { color: var(--text-muted); font-weight: 500; width: 38%; padding-right: 16px; }
+        .specs-table td:last-child { color: var(--text-primary); font-weight: 400; }
+
+        /* Related / footer */
+        .related-section { padding: 0 0 3rem; border-top: 1px solid var(--brand-border); }
+        .section-eyebrow { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; color: var(--brand-accent2); margin-bottom: 0.35rem; }
+        .section-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; letter-spacing: -0.3px; margin-bottom: 0; }
+        .section-header { padding: 1.75rem 0 1.25rem; }
+
+        .nex-footer { border-top: 1px solid var(--brand-border); padding: 1.5rem 0; color: var(--text-muted); font-size: 0.82rem; }
+        @media (max-width: 767px) { .nex-footer { display: none; } }
+        .nex-footer a { color: var(--brand-accent); text-decoration: none; }
+        .nex-footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     DESKTOP NAVBAR
+══════════════════════════════════════ -->
+<nav class="nex-navbar">
+    <div class="container d-flex align-items-center justify-content-between">
+        <a href="/" class="nex-logo">Nex<span>Store</span></a>
+        <div class="d-flex align-items-center gap-3">
+      <span sec:authorize="hasRole('ADMIN')"
+            style="background:rgba(232,240,74,0.12);border:1px solid rgba(232,240,74,0.35);
+                   color:var(--brand-accent);font-size:0.72rem;font-weight:700;letter-spacing:0.6px;
+                   text-transform:uppercase;padding:3px 10px;border-radius:50px;
+                   display:inline-flex;align-items:center;gap:5px;">
+        <i class="bi bi-shield-fill-check"></i>Admin
+      </span>
+            <a href="/admin/orders"  sec:authorize="hasRole('ADMIN')" class="cart-pill"><i class="bi bi-clock-history"></i> Pending Orders</a>
+            <a href="/admin/products" sec:authorize="hasRole('ADMIN')" class="cart-pill"><i class="bi bi-boxes"></i> Inventory</a>
+            <a href="/orders" sec:authorize="isAuthenticated() and !hasRole('ADMIN')" class="cart-pill"><i class="bi bi-bag-check"></i> My Orders</a>
+            <a href="/cart"   sec:authorize="isAuthenticated() and !hasRole('ADMIN')" class="cart-pill">
+                <i class="bi bi-bag"></i> Cart
+                <span class="cart-badge" th:text="${cartItemCount}" th:if="${cartItemCount != null and cartItemCount > 0}"></span>
+            </a>
+            <a href="/login" sec:authorize="isAnonymous()" class="cart-pill"><i class="bi bi-person"></i> Sign In</a>
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="button" class="cart-pill" onclick="confirmSignOut(this.form)"
+                        style="cursor:pointer;border:1px solid var(--brand-border);background:var(--brand-card);
+                       border-radius:50px;padding:0.35rem 0.9rem;color:var(--text-primary);
+                       font-size:0.88rem;display:inline-flex;align-items:center;gap:6px;">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span sec:authentication="name">User</span> · Sign Out
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     MOBILE TOP STRIP
+══════════════════════════════════════ -->
+<div class="mobile-topbar">
+    <a href="/" class="nex-logo">Nex<span>Store</span></a>
+    <div class="mobile-topbar-actions">
+        <!-- back arrow -->
+        <a href="/" class="mob-icon-btn" title="Back to store"><i class="bi bi-arrow-left"></i></a>
+        <!-- cart (users only) -->
+        <a href="/cart" sec:authorize="isAuthenticated() and !hasRole('ADMIN')" class="mob-icon-btn" title="Cart">
+            <i class="bi bi-bag"></i>
+            <span class="mob-cart-badge" th:text="${cartItemCount}" th:if="${cartItemCount != null and cartItemCount > 0}"></span>
+        </a>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BREADCRUMB — desktop only (FIX #5 #8)
+     Label is "NexStore" not "Store" + "Home"
+══════════════════════════════════════ -->
+<div class="breadcrumb-strip">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <!-- FIX #5: single root crumb called "NexStore", no separate "Home" crumb -->
+                <li class="breadcrumb-item">
+                    <a href="/"><i class="bi bi-grid-3x3-gap me-1"></i>NexStore</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/(category=${product.category})}" th:text="${product.category}">Category</a>
+                </li>
+                <li class="breadcrumb-item active" th:text="${product.name}" aria-current="page">Product</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     FLASH / ERROR — FIX #1
+     Use null-safe individual th:if per alert,
+     no outer wrapper with 'or' operator
+══════════════════════════════════════ -->
+<div class="container mt-3">
+    <div class="flash-alert mb-2" th:if="${successMessage != null and !successMessage.isEmpty()}">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div class="error-alert mb-2" th:if="${errorMessage != null and !errorMessage.isEmpty()}">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span th:text="${errorMessage}"></span>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN PRODUCT DETAIL
+══════════════════════════════════════ -->
+<section class="product-detail-section">
+    <div class="container">
+        <div class="row g-4 g-lg-5">
+
+            <!-- LEFT: Image -->
+            <div class="col-12 col-md-6 col-lg-5">
+                <div class="product-image-panel">
+                    <img th:src="${product.imageUrl != null and !product.imageUrl.isEmpty()
+                          ? product.imageUrl : '/images/placeholder.jpg'}"
+                         th:alt="${product.name}" loading="eager" />
+
+                    <div class="img-badge-tl" th:if="${product.discountPercent > 0}">
+            <span class="badge-sale">
+              <i class="bi bi-circle-fill" style="font-size:0.5rem;"></i>
+              <span th:text="'-' + ${product.discountPercent} + '% OFF'">SALE</span>
+            </span>
+                    </div>
+
+                    <div class="badge-oos-overlay" th:if="${product.stock == 0}">
+                        <span>Sold Out</span>
+                    </div>
+                </div>
+
+                <!-- Trust badges (desktop only, below image) -->
+                <div class="trust-row mt-3 d-none d-md-flex">
+                    <div class="trust-item"><i class="bi bi-truck"></i><span>Free shipping<br>over ₹999</span></div>
+                    <div class="trust-item"><i class="bi bi-shield-check"></i><span>Secure<br>checkout</span></div>
+                    <div class="trust-item"><i class="bi bi-arrow-counterclockwise"></i><span>30-day<br>returns</span></div>
+                    <div class="trust-item"><i class="bi bi-headset"></i><span>24/7<br>support</span></div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Info -->
+            <div class="col-12 col-md-6 col-lg-7">
+                <div class="product-info-panel">
+
+                    <!-- Category + SKU -->
+                    <div class="product-meta-row">
+                        <span class="product-category-tag" th:text="${product.category}">Category</span>
+                        <span class="product-sku-tag">
+              <i class="bi bi-upc-scan"></i>
+              SKU: <span th:text="${product.sku}">SKU-0000</span>
+            </span>
+                    </div>
+
+                    <!-- Name -->
+                    <h1 class="product-detail-name" th:text="${product.name}">Product Name</h1>
+
+                    <!-- Stock status -->
+                    <div class="stock-status-row">
+            <span class="status-pill-instock" th:if="${product.stock > 0}">
+              <i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> In Stock
+            </span>
+                        <span class="status-pill-oos" th:unless="${product.stock > 0}">
+              <i class="bi bi-x-circle-fill" style="font-size:0.8rem;"></i> Out of Stock
+            </span>
+                        <span class="stock-qty-label" th:if="${product.stock > 0}">
+              <strong th:text="${product.stock}">0</strong>
+              <span th:if="${product.stock == 1}">unit left</span>
+              <span th:unless="${product.stock == 1}">units available</span>
+            </span>
+                    </div>
+
+                    <hr class="info-divider" />
+
+                    <!-- Pricing -->
+                    <div>
+                        <div class="price-block">
+              <span class="price-current-lg"
+                    th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">₹0.00</span>
+                            <span class="price-original-lg"
+                                  th:if="${product.originalPrice != null and product.originalPrice > product.price}"
+                                  th:text="'₹' + ${#numbers.formatDecimal(product.originalPrice, 1, 'COMMA', 2, 'POINT')}">₹0.00</span>
+                            <span class="discount-badge" th:if="${product.discountPercent != null and product.discountPercent > 0}">
+                <i class="bi bi-tag-fill"></i>
+                <span th:text="${product.discountPercent} + '% off'">0% off</span>
+              </span>
+                        </div>
+                        <p style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;margin-bottom:0;">
+                            Inclusive of all taxes.
+                        </p>
+                    </div>
+
+                    <!-- Stock meter (in stock) -->
+                    <div class="stock-meter-block" th:if="${product.stock > 0}">
+                        <div class="stock-meter-header">
+                            <span>Stock level</span>
+                            <span th:text="${product.stock} + ' remaining'">—</span>
+                        </div>
+                        <div class="stock-bar">
+                            <div class="stock-fill"
+                                 th:classappend="${product.stock <= 5} ? 'low' : ''"
+                                 th:style="'width:' + ${T(java.lang.Math).min(product.stock * 2, 100)} + '%'"></div>
+                        </div>
+                    </div>
+
+                    <!-- Stock meter (depleted) -->
+                    <div class="stock-meter-block" th:unless="${product.stock > 0}">
+                        <div class="stock-meter-header">
+                            <span>Stock level</span>
+                            <span style="color:var(--brand-danger);">Depleted</span>
+                        </div>
+                        <div class="stock-bar"><div class="stock-fill out"></div></div>
+                    </div>
+
+                    <hr class="info-divider" />
+
+                    <!-- ══════════════════════════════════════
+                         CHECKOUT CARD
+                         FIX #2: qty buttons work via JS
+                         FIX #3: Add to Cart redirects back here, not to /
+                         FIX #6: Buy Now uses the same /cart/add endpoint (no /checkout/buy)
+                         FIX #7: Admins see a read-only block, no purchase forms
+                    ══════════════════════════════════════ -->
+                    <div class="checkout-card">
+                        <div class="checkout-card-title">
+                            <i class="bi bi-lightning-charge-fill me-1" style="color:var(--brand-accent);"></i>
+                            Quick Checkout
+                        </div>
+
+                        <!-- ── USER / GUEST view ── in stock ── -->
+                        <div sec:authorize="!hasRole('ADMIN')" th:if="${product.stock > 0}">
+
+                            <!-- Quantity row — FIX #2: JS-driven +/- buttons -->
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <label style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap;" for="qtyInput">
+                                    Quantity:
+                                </label>
+                                <div class="qty-selector">
+                                    <button type="button" class="qty-btn" id="qtyDecrement"
+                                            onclick="adjustQty(-1)" aria-label="Decrease quantity" disabled>
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <div class="qty-divider"></div>
+                                    <input type="number" class="qty-input" id="qtyInput"
+                                           value="1" min="1" th:max="${product.stock}"
+                                           aria-label="Quantity" readonly />
+                                    <div class="qty-divider"></div>
+                                    <button type="button" class="qty-btn" id="qtyIncrement"
+                                            onclick="adjustQty(1)" aria-label="Increase quantity">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <span style="font-size:0.75rem;color:var(--text-muted);">
+                  Max: <strong th:text="${product.stock}" style="color:var(--text-primary);">0</strong>
+                </span>
+                            </div>
+
+                            <!-- FIX #3: action redirects back to product page, not "/" -->
+                            <!-- FIX #6: Add to Cart works; Buy Now uses same endpoint with buyNow flag -->
+                            <form th:action="@{/cart/add/{id}(id=${product.id})}" method="post" id="addToCartForm">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <input type="hidden" name="quantity" id="cartQtyHidden" value="1" />
+                                <!-- FIX #3: after adding, redirect back to this product page -->
+                                <input type="hidden" name="redirectUrl" th:value="@{/products/{id}(id=${product.id})}" />
+                                <button type="submit" class="btn-add-cart mb-2">
+                                    <i class="bi bi-bag-plus-fill"></i> Add to Cart
+                                </button>
+                            </form>
+
+                            <!-- FIX #6: Buy Now — reuses /cart/add with buyNow=true flag so controller can redirect to /cart -->
+                            <form th:action="@{/cart/add/{id}(id=${product.id})}" method="post" id="buyNowForm">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <input type="hidden" name="quantity" id="buyNowQtyHidden" value="1" />
+                                <input type="hidden" name="buyNow" value="true" />
+                                <button type="submit" class="btn-buy-now">
+                                    <i class="bi bi-bolt-fill"></i> Buy Now
+                                </button>
+                            </form>
+
+                        </div>
+
+                        <!-- ── USER / GUEST view ── out of stock ── -->
+                        <div sec:authorize="!hasRole('ADMIN')" th:unless="${product.stock > 0}">
+                            <button type="button" class="btn-add-cart mb-2" disabled>
+                                <i class="bi bi-bag-x-fill"></i> Unavailable
+                            </button>
+                            <button type="button" class="btn-buy-now" disabled>
+                                <i class="bi bi-x-circle"></i> Out of Stock
+                            </button>
+                        </div>
+
+                        <!-- FIX #7: Admin sees read-only notice, no purchase controls at all -->
+                        <div class="admin-purchase-block" sec:authorize="hasRole('ADMIN')">
+                            <i class="bi bi-shield-lock"></i>
+                            <div>
+                                <strong style="color:var(--brand-accent);font-family:'Syne',sans-serif;">Admin view</strong><br>
+                                Purchase and checkout are disabled for admin accounts.
+                                Use <a href="/admin/products" style="color:var(--brand-accent2);text-decoration:none;">Inventory</a>
+                                to manage stock.
+                            </div>
+                        </div>
+
+                        <!-- Trust badges (mobile only, inside card) -->
+                        <div class="trust-row d-md-none">
+                            <div class="trust-item"><i class="bi bi-truck"></i><span>Free ship</span></div>
+                            <div class="trust-item"><i class="bi bi-shield-check"></i><span>Secure</span></div>
+                            <div class="trust-item"><i class="bi bi-arrow-counterclockwise"></i><span>Returns</span></div>
+                        </div>
+                    </div><!-- /checkout-card -->
+
+                </div><!-- /product-info-panel -->
+            </div><!-- /col info -->
+        </div><!-- /row -->
+    </div><!-- /container -->
+</section>
+
+<!-- ══════════════════════════════════════
+     TABS — FIX #4 #9
+     #4: active state now uses solid accent underline via CSS
+     #9: tab bar scrolls horizontally on mobile; icons hidden on tiny screens
+══════════════════════════════════════ -->
+<section class="product-tabs-section">
+    <div class="container">
+
+        <div class="nex-tabs" role="tablist">
+            <button class="nex-tab-btn active" role="tab" aria-selected="true"
+                    onclick="switchTab('description', this)">
+                <i class="bi bi-file-text me-1"></i>Description
+            </button>
+            <button class="nex-tab-btn" role="tab" aria-selected="false"
+                    onclick="switchTab('specifications', this)">
+                <i class="bi bi-list-check me-1"></i>Specifications
+            </button>
+            <button class="nex-tab-btn" role="tab" aria-selected="false"
+                    onclick="switchTab('shipping', this)">
+                <i class="bi bi-truck me-1"></i>Shipping
+            </button>
+        </div>
+
+        <!-- Description tab — FIX #1 on description field: no description field in entity, show static fallback -->
+        <div id="tab-description" class="nex-tab-panel active">
+            <div class="tab-prose">
+                <p>
+                    <strong th:text="${product.name}" style="color:var(--text-primary);">This product</strong>
+                    is part of the <span th:text="${product.category}">category</span> collection at NexStore.
+                    For questions about this item, contact our support team or check the Specifications tab.
+                </p>
+            </div>
+        </div>
+
+        <!-- Specifications tab — FIX #9: wrapped in scrollable div -->
+        <div id="tab-specifications" class="nex-tab-panel">
+            <div class="specs-table-wrap">
+                <table class="specs-table">
+                    <tbody>
+                    <tr><td>Product Name</td><td th:text="${product.name}">—</td></tr>
+                    <tr><td>SKU</td><td th:text="${product.sku}">—</td></tr>
+                    <tr><td>Category</td><td th:text="${product.category}">—</td></tr>
+                    <tr>
+                        <td>Price</td>
+                        <td th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">—</td>
+                    </tr>
+                    <tr th:if="${product.originalPrice != null and product.originalPrice > product.price}">
+                        <td>Original Price</td>
+                        <td th:text="'₹' + ${#numbers.formatDecimal(product.originalPrice, 1, 'COMMA', 2, 'POINT')}">—</td>
+                    </tr>
+                    <tr th:if="${product.discountPercent != null and product.discountPercent > 0}">
+                        <td>Discount</td>
+                        <td th:text="${product.discountPercent} + '% off'">—</td>
+                    </tr>
+                    <tr>
+                        <td>Stock Status</td>
+                        <td>
+                <span th:if="${product.stock > 0}" style="color:var(--brand-accent2);"
+                      th:text="${product.stock} + ' units available'">In Stock</span>
+                            <span th:unless="${product.stock > 0}" style="color:var(--brand-danger);">Out of Stock</span>
+                        </td>
+                    </tr>
+                    <tr><td>Product ID</td><td th:text="${product.id}">—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Shipping tab -->
+        <div id="tab-shipping" class="nex-tab-panel">
+            <div class="tab-prose">
+                <p>Standard delivery takes 3–5 business days. Express (1–2 day) delivery is available at checkout for most pin codes.</p>
+                <p>Orders over ₹999 qualify for free standard shipping. Tracking information is emailed once your order is dispatched.</p>
+                <p>We offer a 30-day hassle-free return policy. Items must be unused and in original packaging.
+                    Initiate a return from <a href="/orders" style="color:var(--brand-accent);text-decoration:none;">My Orders</a>.</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     EXPLORE MORE
+══════════════════════════════════════ -->
+<section class="related-section">
+    <div class="container">
+        <div class="section-header d-flex align-items-end justify-content-between">
+            <div>
+                <div class="section-eyebrow">Explore More</div>
+                <h2 class="section-title">
+                    More in <span th:text="${product.category}" style="color:var(--brand-accent);">Category</span>
+                </h2>
+            </div>
+            <a th:href="@{/(category=${product.category})}" class="cart-pill d-none d-md-inline-flex">
+                View all <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div style="padding:1rem 0 1.5rem;text-align:center;">
+            <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.25rem;">
+                Browse the full <strong th:text="${product.category}" style="color:var(--text-primary);"></strong> catalogue.
+            </p>
+            <a th:href="@{/(category=${product.category})}" class="btn-add-cart d-inline-flex"
+               style="width:auto;padding:11px 28px;">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                Shop <span th:text="${product.category}" class="ms-1"></span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FOOTER (desktop only)
+══════════════════════════════════════ -->
+<footer class="nex-footer">
+    <div class="container">
+        <div class="row align-items-center g-2">
+            <div class="col-12 col-md-4 text-md-start text-center">
+                <a href="/" class="nex-logo" style="font-size:1.1rem;">Nex<span>Store</span></a>
+            </div>
+            <div class="col-12 col-md-4 text-center">
+                &copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span> NexStore. All rights reserved.
+            </div>
+            <div class="col-12 col-md-4 text-md-end text-center">
+                <a href="/privacy" class="me-3">Privacy</a>
+                <a href="/terms" class="me-3">Terms</a>
+                <a href="/contact">Contact</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ══════════════════════════════════════
+     MOBILE BOTTOM NAV
+══════════════════════════════════════ -->
+<nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+    <div class="mob-nav-inner">
+        <a href="/" class="mob-nav-item">
+            <i class="bi bi-house-door"></i><span>Home</span>
+        </a>
+        <a href="/orders" sec:authorize="isAuthenticated() and !hasRole('ADMIN')" class="mob-nav-item">
+            <i class="bi bi-bag-check"></i><span>Orders</span>
+        </a>
+        <a href="/admin/orders" sec:authorize="hasRole('ADMIN')" class="mob-nav-item">
+            <i class="bi bi-clock-history"></i><span>Orders</span>
+        </a>
+        <a href="/admin/products" sec:authorize="hasRole('ADMIN')" class="mob-nav-item">
+            <i class="bi bi-boxes"></i><span>Inventory</span>
+        </a>
+        <a href="/cart" sec:authorize="isAuthenticated() and !hasRole('ADMIN')" class="mob-nav-item">
+            <i class="bi bi-bag"></i><span>Cart</span>
+            <span class="mob-nav-badge" th:text="${cartItemCount}"
+                  th:if="${cartItemCount != null and cartItemCount > 0}"></span>
+        </a>
+        <a href="/login" sec:authorize="isAnonymous()" class="mob-nav-item">
+            <i class="bi bi-person"></i><span>Sign In</span>
+        </a>
+        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="mob-nav-form">
+            <button type="button" onclick="confirmSignOut(this.form)">
+                <i class="bi bi-box-arrow-right"></i><span>Sign Out</span>
+            </button>
+        </form>
+    </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     SIGN-OUT MODAL
+══════════════════════════════════════ -->
+<div id="signOutModal" style="
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;padding:1rem;">
+    <div style="background:var(--brand-card);border:1px solid var(--brand-border);
+              border-radius:var(--radius-card);width:100%;max-width:360px;
+              padding:2rem;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+        <div style="width:56px;height:56px;border-radius:14px;margin:0 auto 1.1rem;
+                background:rgba(255,76,106,0.1);border:1px solid rgba(255,76,106,0.25);
+                display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--brand-danger);">
+            <i class="bi bi-box-arrow-right"></i>
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;margin-bottom:0.4rem;">Sign out?</div>
+        <p style="color:var(--text-muted);font-size:0.85rem;line-height:1.6;margin-bottom:1.6rem;">
+            You'll need to sign back in to access your cart and orders.
+        </p>
+        <div style="display:flex;gap:0.6rem;">
+            <button type="button" onclick="closeSignOutModal()" style="
+        flex:1;background:transparent;border:1px solid var(--brand-border);
+        border-radius:8px;color:var(--text-muted);font-family:'DM Sans',sans-serif;
+        font-size:0.9rem;padding:10px;cursor:pointer;transition:border-color 0.22s,color 0.22s;"
+                    onmouseover="this.style.borderColor='var(--brand-accent2)';this.style.color='var(--brand-accent2)'"
+                    onmouseout="this.style.borderColor='var(--brand-border)';this.style.color='var(--text-muted)'">Stay</button>
+            <button type="button" onclick="doSignOut()" style="
+        flex:1;background:var(--brand-danger);border:none;border-radius:8px;color:#fff;
+        font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;padding:10px;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.22s;"
+                    onmouseover="this.style.background='#e03555'" onmouseout="this.style.background='var(--brand-danger)'">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+    /* ── FIX #2: Quantity selector ───────────────────────────────────── */
+    const qtyInput        = document.getElementById('qtyInput');
+    const cartQtyHidden   = document.getElementById('cartQtyHidden');
+    const buyNowQtyHidden = document.getElementById('buyNowQtyHidden');
+    const qtyDecrement    = document.getElementById('qtyDecrement');
+    const qtyIncrement    = document.getElementById('qtyIncrement');
+
+    function getMax() { return qtyInput ? parseInt(qtyInput.max) || 1 : 1; }
+    function getMin() { return 1; }
+
+    function syncButtons(val) {
+        if (qtyDecrement) qtyDecrement.disabled = val <= getMin();
+        if (qtyIncrement) qtyIncrement.disabled = val >= getMax();
+    }
+
+    function adjustQty(delta) {
+        if (!qtyInput) return;
+        let val = parseInt(qtyInput.value) || 1;
+        val = Math.min(Math.max(val + delta, getMin()), getMax());
+        qtyInput.value = val;
+        if (cartQtyHidden)   cartQtyHidden.value   = val;
+        if (buyNowQtyHidden) buyNowQtyHidden.value = val;
+        syncButtons(val);
+    }
+
+    // Initialise button state on load
+    if (qtyInput) {
+        syncButtons(parseInt(qtyInput.value) || 1);
+        qtyInput.addEventListener('change', () => {
+            const val = Math.min(Math.max(parseInt(qtyInput.value) || 1, getMin()), getMax());
+            qtyInput.value = val;
+            if (cartQtyHidden)   cartQtyHidden.value   = val;
+            if (buyNowQtyHidden) buyNowQtyHidden.value = val;
+            syncButtons(val);
+        });
+    }
+
+    /* ── FIX #4: Tab switching ───────────────────────────────────────── */
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.nex-tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nex-tab-btn').forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+        });
+        const panel = document.getElementById('tab-' + tabId);
+        if (panel) panel.classList.add('active');
+        if (btn)  { btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); }
+    }
+
+    /* ── Bottom nav active state ─────────────────────────────────────── */
+    (function () {
+        const path = window.location.pathname;
+        document.querySelectorAll('.mob-nav-item').forEach(item => {
+            const href = item.getAttribute('href');
+            if (!href) return;
+            item.classList.toggle('active', href === '/' ? path === '/' : path.startsWith(href));
+        });
+    })();
+
+    /* ── FIX #10: Prevent black-flash on back/forward navigation ──────
+       Forces the browser to repaint the background on bfcache restore  */
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+            // Page loaded from bfcache; repaint body background
+            document.body.style.display = 'none';
+            // eslint-disable-next-line no-unused-expressions
+            document.body.offsetHeight; // trigger reflow
+            document.body.style.display = '';
+        }
+    });
+
+    /* ── Sign-out modal ──────────────────────────────────────────────── */
+    let _signOutForm = null;
+
+    function confirmSignOut(form) {
+        _signOutForm = form;
+        document.getElementById('signOutModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSignOutModal() {
+        document.getElementById('signOutModal').style.display = 'none';
+        document.body.style.overflow = '';
+        _signOutForm = null;
+    }
+    function doSignOut() { if (_signOutForm) _signOutForm.submit(); }
+
+    document.getElementById('signOutModal').addEventListener('click', function (e) {
+        if (e.target === this) closeSignOutModal();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSignOutModal(); });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

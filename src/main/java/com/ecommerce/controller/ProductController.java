@@ -4,6 +4,7 @@ import com.ecommerce.entity.Product;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.service.CartService;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
@@ -48,16 +50,40 @@ public class ProductController {
     }
 
     @PostMapping("/cart/add/{id}")
-    public String addToCart(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        // 1. Fetch product
+    public String addToCart(@PathVariable Long id,
+                            @RequestParam(defaultValue = "1") Integer quantity,
+                            @RequestParam(required = false) String redirectUrl,
+                            @RequestParam(required = false) Boolean buyNow,
+                            RedirectAttributes redirectAttributes) {
+
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // 2. Add to cart service (which you already defined in CartService)
-        cartService.addProduct(product);
+        // Add the explicitly designated item quantities into the user session cart
+        for (int i = 0; i < quantity; i++) {
+            cartService.addProduct(product);
+        }
 
         redirectAttributes.addFlashAttribute("successMessage", product.getName() + " added to cart!");
 
-        return "redirect:/"; // Stays on the main index page
+        // FIX #6: If Buy Now wrapper flag is triggered, intercept and route straight to cart layout screen
+        if (Boolean.TRUE.equals(buyNow)) {
+            return "redirect:/cart";
+        }
+
+        // FIX #3: If context path contains a custom redirect string, return to it instead of the home screen index fallback
+        if (redirectUrl != null && !redirectUrl.isBlank()) {
+            return "redirect:" + redirectUrl;
+        }
+
+        return "redirect:/";
+    }
+
+    @GetMapping("/products/{id}")
+    public String productDetail(@PathVariable Long id, Model model) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        model.addAttribute("product", product);
+        return "product-detail";
     }
 }

@@ -1117,6 +1117,7 @@
       btnUrl.classList.add('active');
       btnUpload.classList.remove('active');
       fileInput.disabled = true;
+      fileInput.value = '';
       urlInput.disabled  = false;
     } else {
       urlSection.style.display    = 'none';
@@ -1126,6 +1127,7 @@
       urlInput.value    = '';
       urlInput.disabled = true;
       fileInput.disabled = false;
+      fileInput.value = '';
       document.getElementById('imagePreviewWrap').style.display = 'none';
     }
   }

@@ -81,10 +81,27 @@ public class AdminController {
     }
 
     @PostMapping("/products/edit/{id}")
-    public String editProduct(@PathVariable Long id, Product product){
+    public String editProduct(@PathVariable Long id,
+                              Product product,
+                              @RequestPart(value = "imageFile", required = false) MultipartFile imageFile) {
         product.setId(id);
-        productRepository.save(product);
 
+        try {
+            if (imageFile != null && !imageFile.isEmpty()) {
+                // New file uploaded — push to Azure and use that URL
+                String imageUrl = blobStorageService.uploadImage(imageFile);
+                product.setImageUrl(imageUrl);
+            } else if (product.getImageUrl() == null || product.getImageUrl().isBlank()) {
+                // No new file and no URL typed — preserve the existing image from DB
+                productRepository.findById(id)
+                        .ifPresent(existing -> product.setImageUrl(existing.getImageUrl()));
+            }
+            // else: imageUrl field had a value typed in — use it as-is
+        } catch (IOException e) {
+            return "redirect:/admin/products?error=upload_failed";
+        }
+
+        productRepository.save(product);
         return "redirect:/admin/products";
     }
     @PostMapping("/products/delete/{id}")
