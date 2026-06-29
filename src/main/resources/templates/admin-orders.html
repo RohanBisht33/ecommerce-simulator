@@ -76,6 +76,12 @@
       border-bottom: 1px solid var(--brand-border);
       padding: 2.5rem 0 2rem; position: relative; overflow: hidden;
     }
+    @media (max-width: 767px) {
+      .hero-strip { padding: 1.1rem 0 0.9rem; }
+      .hero-eyebrow { font-size: 0.68rem; padding: 2px 9px; margin-bottom: 0.4rem; }
+      .hero-heading { font-size: 1.35rem; line-height: 1.2; }
+      .hero-sub { font-size: 0.82rem; line-height: 1.45; margin-top: 0.3rem !important; }
+    }
     .hero-strip::before {
       content: ''; position: absolute; inset: 0;
       background: radial-gradient(ellipse 60% 120% at 80% 50%, rgba(255,165,0,0.05) 0%, transparent 70%);
@@ -153,6 +159,9 @@
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 0.75rem; padding: 1.75rem 0 1rem;
     }
+    @media (max-width: 767px) {
+      .section-header { padding: 1.1rem 0 0.75rem; }
+    }
     .section-title {
       font-family: 'Syne', sans-serif; font-weight: 700;
       font-size: 1.05rem; color: var(--text-primary);
@@ -167,6 +176,47 @@
       border-color: #ffa500; color: #ffa500; background: rgba(255,165,0,0.06);
     }
 
+    /* ── Mobile: trigger row + dropdown panel ── */
+    .filter-mobile-row { display: none; position: relative; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%; }
+    .filter-mobile-label { font-size: 0.82rem; color: var(--text-muted); }
+    .filter-mobile-label strong { color: var(--text-primary); }
+
+    .filter-trigger-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--brand-card); border: 1px solid var(--brand-border);
+      border-radius: 10px; color: var(--text-primary); font-size: 0.82rem; font-weight: 500;
+      padding: 7px 14px; cursor: pointer; position: relative;
+    }
+    .filter-trigger-btn.has-filter { border-color: #ffa500; color: #ffa500; }
+    .filter-trigger-dot {
+      display: none; width: 7px; height: 7px; border-radius: 50%;
+      background: #ffa500; position: absolute; top: 6px; right: 6px;
+    }
+    .filter-trigger-btn.has-filter .filter-trigger-dot { display: block; }
+
+    .filter-dropdown-panel {
+      display: none; position: absolute; top: calc(100% + 8px); right: 0; z-index: 50;
+      background: var(--brand-card); border: 1px solid var(--brand-border);
+      border-radius: 12px; min-width: 200px; padding: 6px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    }
+    .filter-dropdown-panel.open { display: block; }
+    .filter-option {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 10px; border-radius: 8px;
+      color: var(--text-primary); text-decoration: none; font-size: 0.88rem;
+    }
+    .filter-option:hover { background: rgba(255,255,255,0.04); }
+    .filter-option.active { color: #ffa500; font-weight: 700; }
+    .filter-option i.bi-check-lg { color: #ffa500; visibility: hidden; font-size: 0.85rem; }
+    .filter-option.active i.bi-check-lg { visibility: visible; }
+
+    @media (max-width: 767px) {
+      .filter-chips { display: none; }
+      .filter-mobile-row { display: flex; }
+    }
+
+
     /* ── Order card ── */
     .order-card {
       background: var(--brand-card); border: 1px solid var(--brand-border);
@@ -174,6 +224,9 @@
       transition: border-color var(--transition), box-shadow var(--transition);
     }
     .order-card:hover { border-color: #3a4660; box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+    @media (max-width: 640px) {
+      .order-card { border-radius: 12px; margin-bottom: 0.65rem; }
+    }
 
     .order-card-top {
       display: flex; align-items: center; justify-content: space-between;
@@ -181,10 +234,17 @@
       background: linear-gradient(90deg, rgba(22,27,39,0.8), rgba(13,15,20,0.4));
       border-bottom: 1px solid var(--brand-border);
     }
-    .order-top-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .order-top-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; min-width: 0; }
     .order-number {
       font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem;
       color: var(--brand-accent); display: flex; align-items: center; gap: 7px;
+    }
+    @media (max-width: 480px) {
+      .order-card-top { padding: 0.75rem 1rem; gap: 0.4rem 0.6rem; }
+      .order-top-left { gap: 0.6rem; }
+      .order-number { font-size: 0.86rem; }
+      .order-number span { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .customer-tag { font-size: 0.74rem; }
     }
     .customer-tag {
       font-size: 0.8rem; color: var(--text-muted);
@@ -201,18 +261,44 @@
     .status-shipped    { background: rgba(100,149,237,0.1); color: #6495ed;               border: 1px solid rgba(100,149,237,0.25); }
     .status-delivered  { background: rgba(74,240,212,0.1);  color: var(--brand-accent2);  border: 1px solid rgba(74,240,212,0.25); }
     .status-cancelled  { background: rgba(255,76,106,0.1);  color: var(--brand-danger);   border: 1px solid rgba(255,76,106,0.25); }
+    .status-refunded   { background: rgba(138,43,226,0.1);  color: #8a2be2; border: 1px solid rgba(138,43,226,0.25); }
 
     .order-card-body {
       display: grid; grid-template-columns: 1fr 1fr 1fr auto;
       align-items: center; gap: 1rem; padding: 1.1rem 1.4rem;
     }
     @media (max-width: 640px) {
-      .order-card-body { grid-template-columns: 1fr 1fr; }
-      .order-action { grid-column: 1 / -1; }
+      .order-card-body {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.6rem 0.5rem;
+        padding: 0.9rem 1rem;
+      }
+      .order-action { display: none; } /* replaced by full-width footer button on mobile */
     }
     .order-meta-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
     .order-meta-value { font-size: 0.92rem; color: var(--text-primary); font-weight: 500; }
     .order-total-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.2rem; color: var(--brand-accent); }
+    @media (max-width: 640px) {
+      .order-meta-label { font-size: 0.62rem; }
+      .order-meta-value { font-size: 0.82rem; }
+      .order-total-value { font-size: 1rem; }
+    }
+    @media (max-width: 360px) {
+      .order-card-body { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Mobile footer action button — replaces the inline .order-action link */
+    .order-mobile-action {
+      display: none;
+    }
+    @media (max-width: 640px) {
+      .order-mobile-action {
+        display: flex; margin: 0 1rem 0.9rem;
+      }
+      .order-mobile-action .btn-view-order {
+        flex: 1; justify-content: center; padding: 9px 0;
+      }
+    }
 
     /* ── Action buttons panel ── */
     .order-actions-panel {
@@ -221,11 +307,18 @@
       border-top: 1px solid rgba(42,51,80,0.5);
       margin-top: 0; padding-top: 1rem;
     }
+    @media (max-width: 640px) {
+      .order-actions-panel { padding: 0.75rem 1rem; }
+    }
 
     .order-items-strip {
       padding: 0 1.4rem 0;
       display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
       padding-bottom: 0.85rem;
+    }
+    @media (max-width: 640px) {
+      .order-items-strip { padding: 0 1rem; padding-bottom: 0.65rem; gap: 6px; }
+      .item-thumb, .item-thumb-more { width: 32px; height: 32px; }
     }
     .items-label { font-size: 0.75rem; color: var(--text-muted); }
     .item-thumb {
@@ -254,7 +347,7 @@
     .btn-confirm {
       background: var(--brand-accent2); border: none; color: var(--brand-dark);
       border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem;
-      padding: 7px 18px; cursor: pointer;
+      padding: 7px 18px; cursor: pointer; text-decoration: none;
       transition: background var(--transition), transform 0.1s;
       display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
     }
@@ -499,7 +592,7 @@
       Requires Action
     </div>
     <h1 class="hero-heading">Pending <em>Orders.</em></h1>
-    <p class="hero-sub mt-2">All customer orders awaiting your confirmation. Confirm to proceed, or cancel to refund.</p>
+    <p class="hero-sub mt-2">All customer orders. Open an order to review it and update its status.</p>
   </div>
 </section>
 
@@ -553,13 +646,55 @@
       <i class="bi bi-list-ul me-2" style="color:var(--text-muted);"></i>
       All Orders
     </div>
+
+    <!-- Desktop: horizontal chip row -->
     <div class="filter-chips">
-      <a href="/admin/orders"                       class="filter-chip active">All</a>
-      <a href="/admin/orders?status=PENDING"        class="filter-chip">Pending</a>
-      <a href="/admin/orders?status=PROCESSING"     class="filter-chip">Processing</a>
-      <a href="/admin/orders?status=SHIPPED"        class="filter-chip">Shipped</a>
-      <a href="/admin/orders?status=DELIVERED"      class="filter-chip">Delivered</a>
-      <a href="/admin/orders?status=CANCELLED"      class="filter-chip">Cancelled</a>
+      <a href="/admin/orders" th:classappend="${currentStatus == 'all'} ? 'active' : ''" class="filter-chip">All</a>
+      <a href="/admin/orders?status=PENDING" th:classappend="${currentStatus == 'pending'} ? 'active' : ''" class="filter-chip">Pending</a>
+      <a href="/admin/orders?status=PROCESSING" th:classappend="${currentStatus == 'processing'} ? 'active' : ''" class="filter-chip">Processing</a>
+      <a href="/admin/orders?status=SHIPPED" th:classappend="${currentStatus == 'shipped'} ? 'active' : ''" class="filter-chip">Shipped</a>
+      <a href="/admin/orders?status=DELIVERED" th:classappend="${currentStatus == 'delivered'} ? 'active' : ''" class="filter-chip">Delivered</a>
+      <a href="/admin/orders?status=CANCELLED" th:classappend="${currentStatus == 'cancelled'} ? 'active' : ''" class="filter-chip">Cancelled</a>
+      <a href="/admin/orders?status=REFUNDED" th:classappend="${currentStatus == 'refunded'} ? 'active' : ''" class="filter-chip">Refunded</a>
+    </div>
+
+    <!-- Mobile: trigger button + dropdown panel -->
+    <div class="filter-mobile-row">
+      <div class="filter-mobile-label">
+        Showing:
+        <strong th:text="${currentStatus == 'all'} ? 'All Orders' : ${#strings.capitalize(currentStatus)}">All Orders</strong>
+      </div>
+
+      <button type="button" id="filterTriggerBtn" class="filter-trigger-btn"
+              th:classappend="${currentStatus != 'all'} ? 'has-filter' : ''"
+              onclick="toggleFilterPanel()">
+        <i class="bi bi-sliders"></i> Filter
+        <span class="filter-trigger-dot"></span>
+      </button>
+
+      <div id="filterDropdownPanel" class="filter-dropdown-panel">
+        <a href="/admin/orders" class="filter-option" th:classappend="${currentStatus == 'all'} ? 'active' : ''">
+          <span>All Orders</span><i class="bi bi-check-lg"></i>
+        </a>
+        <a href="/admin/orders?status=PENDING" class="filter-option" th:classappend="${currentStatus == 'pending'} ? 'active' : ''">
+          <span>Pending</span><i class="bi bi-check-lg"></i>
+        </a>
+        <a href="/admin/orders?status=PROCESSING" class="filter-option" th:classappend="${currentStatus == 'processing'} ? 'active' : ''">
+          <span>Processing</span><i class="bi bi-check-lg"></i>
+        </a>
+        <a href="/admin/orders?status=SHIPPED" class="filter-option" th:classappend="${currentStatus == 'shipped'} ? 'active' : ''">
+          <span>Shipped</span><i class="bi bi-check-lg"></i>
+        </a>
+        <a href="/admin/orders?status=DELIVERED" class="filter-option" th:classappend="${currentStatus == 'delivered'} ? 'active' : ''">
+          <span>Delivered</span><i class="bi bi-check-lg"></i>
+        </a>
+        <a href="/admin/orders?status=CANCELLED" class="filter-option" th:classappend="${currentStatus == 'cancelled'} ? 'active' : ''">
+          <span>Cancelled</span><i class="bi bi-check-lg"></i>
+        </a>
+        <a href="/admin/orders?status=REFUNDED" class="filter-option" th:classappend="${currentStatus == 'refunded'} ? 'active' : ''">
+          <span>Refunded</span><i class="bi bi-check-lg"></i>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -583,6 +718,7 @@
                            (${order.status == 'PROCESSING'} ? 'status-processing' :
                            (${order.status == 'SHIPPED'}    ? 'status-shipped'    :
                            (${order.status == 'CANCELLED'}  ? 'status-cancelled'  :
+                           (${order.status == 'REFUNDED'}  ? 'status-refunded'  :
                                                               'status-pending')))"
             th:text="${order.status}">PENDING</span>
     </div>
@@ -606,9 +742,16 @@
       </div>
       <div class="order-action">
         <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn-view-order">
-          <i class="bi bi-eye"></i> Details
+          <i class="bi bi-eye"></i> View / Manage
         </a>
       </div>
+    </div>
+
+    <!-- Mobile-only full-width action button (desktop uses the inline one above) -->
+    <div class="order-mobile-action">
+      <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn-view-order">
+        <i class="bi bi-eye"></i> View / Manage
+      </a>
     </div>
 
     <!-- Item thumbnails -->
@@ -623,54 +766,12 @@
            th:text="'+' + (${#lists.size(order.orderItems)} - 4)">+2</div>
     </div>
 
-    <!-- Action buttons — context-sensitive by status -->
-    <div class="order-actions-panel">
-
-      <!-- PENDING: can confirm or cancel -->
-      <th:block th:if="${order.status == 'PENDING'}">
-        <form th:action="@{/admin/orders/{id}/confirm(id=${order.id})}" method="post" style="margin:0;">
-          <button type="submit" class="btn-confirm">
-            <i class="bi bi-check-lg"></i> Confirm Order
-          </button>
-        </form>
-        <form th:action="@{/admin/orders/{id}/cancel(id=${order.id})}" method="post" style="margin:0;">
-          <button type="submit" class="btn-reject">
-            <i class="bi bi-x-lg"></i> Cancel
-          </button>
-        </form>
-      </th:block>
-
-      <!-- PROCESSING: can mark as shipped or cancel -->
-      <th:block th:if="${order.status == 'PROCESSING'}">
-        <form th:action="@{/admin/orders/{id}/ship(id=${order.id})}" method="post" style="margin:0;">
-          <button type="submit" class="btn-ship">
-            <i class="bi bi-truck"></i> Mark Shipped
-          </button>
-        </form>
-        <form th:action="@{/admin/orders/{id}/cancel(id=${order.id})}" method="post" style="margin:0;">
-          <button type="submit" class="btn-reject">
-            <i class="bi bi-x-lg"></i> Cancel
-          </button>
-        </form>
-      </th:block>
-
-      <!-- SHIPPED: can mark as delivered -->
-      <th:block th:if="${order.status == 'SHIPPED'}">
-        <form th:action="@{/admin/orders/{id}/deliver(id=${order.id})}" method="post" style="margin:0;">
-          <button type="submit" class="btn-confirm">
-            <i class="bi bi-house-check"></i> Mark Delivered
-          </button>
-        </form>
-      </th:block>
-
-      <!-- DELIVERED / CANCELLED: terminal states, view only -->
-      <th:block th:if="${order.status == 'DELIVERED' or order.status == 'CANCELLED'}">
-        <span style="font-size:0.8rem;color:var(--text-muted);">
-          <i class="bi bi-lock" style="margin-right:4px;"></i>
-          <span th:text="${order.status == 'DELIVERED'} ? 'Order fulfilled — no further actions.' : 'Order cancelled.'"></span>
-        </span>
-      </th:block>
-
+    <!-- Status is managed on the order detail page (see "View / Manage" above) -->
+    <div class="order-actions-panel" th:if="${order.status.name() == 'DELIVERED' or order.status.name() == 'CANCELLED' or order.status.name() == 'REFUNDED'}">
+  <span style="font-size:0.8rem;color:var(--text-muted);">
+    <i class="bi bi-lock" style="margin-right:4px;"></i>
+    <span th:text="${order.status.name() == 'DELIVERED'} ? 'Order fulfilled.' : (${order.status.name() == 'CANCELLED'} ? 'Order cancelled.' : 'Order refunded.')"></span>
+  </span>
     </div>
 
   </div><!-- /order-card th:each -->
@@ -734,6 +835,20 @@
             })
             .catch(() => { dot.style.color = '#ff4c6a'; link.title = 'Unreachable'; });
   })();
+</script>
+
+<script>
+  function toggleFilterPanel() {
+    document.getElementById('filterDropdownPanel').classList.toggle('open');
+  }
+  // Close the panel when tapping/clicking anywhere outside it
+  document.addEventListener('click', function (e) {
+    const panel = document.getElementById('filterDropdownPanel');
+    const trigger = document.getElementById('filterTriggerBtn');
+    if (!panel.contains(e.target) && !trigger.contains(e.target)) {
+      panel.classList.remove('open');
+    }
+  });
 </script>
 
 <!-- ══ SIGN-OUT CONFIRM MODAL ══ -->

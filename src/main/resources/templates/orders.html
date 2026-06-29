@@ -229,6 +229,9 @@
     .status-shipped    { background: rgba(100,149,237,0.1); color: #6495ed;               border: 1px solid rgba(100,149,237,0.25); }
     .status-cancelled  { background: rgba(255,76,106,0.1);  color: var(--brand-danger);  border: 1px solid rgba(255,76,106,0.25); }
     .status-pending    { background: rgba(255,165,0,0.1);   color: #ffa500;               border: 1px solid rgba(255,165,0,0.25); }
+    .status-refunded   { background: rgba(138,43,226,0.1);  color: #8a2be2;               border: 1px solid rgba(138,43,226,0.25); }
+    /* PENDING gets its own waiting-on-admin look, distinct from PROCESSING */
+    .status-pending i.bi-hourglass-split { font-size: 0.68rem; margin-right: 2px; }
 
     .order-card-body {
       display: grid;
@@ -278,6 +281,116 @@
       white-space: nowrap;
     }
     .btn-view-order:hover { border-color: var(--brand-accent2); color: var(--brand-accent2); }
+
+    /* Order action button group (View / Cancel / Refund) */
+    .order-action {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 640px) {
+      .order-action { justify-content: stretch; gap: 0.5rem; }
+      .order-action > a,
+      .order-action > button { flex: 1 1 auto; justify-content: center; }
+    }
+    @media (max-width: 420px) {
+      .order-action { flex-direction: column; align-items: stretch; }
+    }
+
+    .btn-cancel-order, .btn-refund-order {
+      background: transparent;
+      border: 1px solid var(--brand-border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.82rem;
+      padding: 7px 16px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color var(--transition), color var(--transition), background var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn-cancel-order { color: var(--brand-danger); border-color: rgba(255,76,106,0.3); }
+    .btn-cancel-order:hover { border-color: var(--brand-danger); background: rgba(255,76,106,0.08); }
+    .btn-refund-order { color: #8a2be2; border-color: rgba(138,43,226,0.3); }
+    .btn-refund-order:hover { border-color: #8a2be2; background: rgba(138,43,226,0.08); }
+
+    /* Order action confirm modal */
+    .order-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .order-modal-overlay.show { display: flex; }
+    .order-modal-box {
+      background: var(--brand-card);
+      border: 1px solid var(--brand-border);
+      border-radius: var(--radius-card);
+      width: 100%;
+      max-width: 380px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+    .order-modal-icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      margin: 0 auto 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+    }
+    .order-modal-icon.danger { background: rgba(255,76,106,0.1); border: 1px solid rgba(255,76,106,0.25); color: var(--brand-danger); }
+    .order-modal-icon.purple { background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.25); color: #8a2be2; }
+    .order-modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.15rem; margin-bottom: 0.4rem; }
+    .order-modal-sub { color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin-bottom: 1.6rem; }
+    .order-modal-sub strong { color: var(--text-primary); }
+    .order-modal-actions { display: flex; gap: 0.6rem; }
+    .order-modal-btn-secondary {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--brand-border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 10px;
+      cursor: pointer;
+      transition: border-color 0.22s, color 0.22s;
+    }
+    .order-modal-btn-secondary:hover { border-color: var(--brand-accent2); color: var(--brand-accent2); }
+    .order-modal-btn-confirm {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.22s, transform 0.1s;
+    }
+    .order-modal-btn-confirm.danger { background: var(--brand-danger); }
+    .order-modal-btn-confirm.danger:hover { background: #e03555; }
+    .order-modal-btn-confirm.purple { background: #8a2be2; }
+    .order-modal-btn-confirm.purple:hover { background: #7a24c9; }
+    .order-modal-btn-confirm:active { transform: scale(0.97); }
 
     .order-items-strip {
       padding: 0 1.4rem 1.1rem;
@@ -433,77 +546,9 @@
       margin-top: 3rem;
     }
     .nex-footer a { color: var(--brand-accent); text-decoration: none; }
-    @media (max-width: 767px) { .filter-trigger-btn {
-      background: var(--brand-card);
-      border: 1px solid var(--brand-border);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-size: 0.82rem;
-      font-weight: 500;
-      padding: 7px 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: border-color var(--transition), color var(--transition);
-      position: relative;
+    @media (max-width: 767px) {
+      .nex-footer { display: none; }
     }
-      .filter-trigger-btn:hover,
-      .filter-trigger-btn.open {
-        border-color: var(--brand-accent);
-        color: var(--brand-accent);
-      }
-      .filter-trigger-dot {
-        width: 6px; height: 6px;
-        border-radius: 50%;
-        background: var(--brand-accent);
-        display: none;
-      }
-      .filter-trigger-btn.has-filter .filter-trigger-dot { display: inline-block; }
-      .filter-dropdown-panel {
-        display: none;
-        position: absolute;
-        top: calc(100% + 6px);
-        right: 0;
-        background: var(--brand-card);
-        border: 1px solid var(--brand-border);
-        border-radius: 12px;
-        box-shadow: 0 12px 32px rgba(0,0,0,0.45);
-        padding: 8px;
-        min-width: 200px;
-        z-index: 200;
-      }
-      .filter-dropdown-panel.open { display: block; }
-      .filter-option {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 9px 12px;
-        border-radius: 8px;
-        color: var(--text-muted);
-        font-size: 0.85rem;
-        text-decoration: none;
-        transition: background var(--transition), color var(--transition);
-        -webkit-tap-highlight-color: transparent;
-      }
-      .filter-option:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
-      .filter-option.active { color: var(--brand-accent); background: rgba(232,240,74,0.08); font-weight: 600; }
-      .filter-option.active i { display: inline-block; }
-      .filter-option i { font-size: 0.85rem; display: none; }
-      /* Mobile: order card body responsive */
-      @media (max-width: 640px) {
-        .order-card-body {
-          grid-template-columns: 1fr 1fr !important;
-          gap: 0.65rem !important;
-        }
-        .order-action { grid-column: 1 / -1; }
-        .order-card-top { padding: 0.75rem 1rem; }
-        .order-card-body { padding: 0.85rem 1rem; }
-        .order-items-strip { padding: 0 1rem 0.85rem; }
-      }
-      .nex-footer { display: none; } }
 
     /* ══════════════════════════════════════
        MOBILE TOP STRIP (logo + icon buttons)
@@ -754,6 +799,7 @@
       <a href="/orders?status=shipped"      class="filter-chip">Shipped</a>
       <a href="/orders?status=delivered"    class="filter-chip">Delivered</a>
       <a href="/orders?status=cancelled"    class="filter-chip">Cancelled</a>
+      <a href="/orders?status=refunded"    class="filter-chip">Refunded</a>
     </div>
   </div>
 
@@ -769,6 +815,7 @@
                             (${order.status == 'PROCESSING'} ? 'status-processing' :
                             (${order.status == 'SHIPPED'}    ? 'status-shipped'    :
                             (${order.status == 'CANCELLED'}  ? 'status-cancelled'  :
+                            (${order.status == 'REFUNDED'}  ? 'status-refunded'  :
                                                                'status-pending')))"
             th:text="${order.status}">
         PROCESSING
@@ -804,8 +851,27 @@
         <a th:href="@{/orders/{id}(id=${order.id})}" class="btn-view-order">
           <i class="bi bi-eye"></i> View Details
         </a>
+
+        <button type="button"
+                th:if="${order.status == 'PENDING'}"
+                class="btn-cancel-order"
+                th:attr="data-order-id=${order.id},data-order-number=${order.orderNumber}"
+                onclick="openOrderActionModal(this, 'cancel')">
+          <i class="bi bi-x-circle"></i> Cancel
+        </button>
+
+        <button type="button"
+                th:if="${order.status == 'DELIVERED' || order.status == 'SHIPPED'}"
+                class="btn-refund-order"
+                th:attr="data-order-id=${order.id},data-order-number=${order.orderNumber}"
+                onclick="openOrderActionModal(this, 'refund')">
+          <i class="bi bi-arrow-counterclockwise"></i> Refund
+        </button>
       </div>
     </div>
+
+    <form th:id="'cancelForm-' + ${order.id}" th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post" style="display:none;"></form>
+    <form th:id="'refundForm-' + ${order.id}" th:action="@{/orders/{id}/refund(id=${order.id})}" method="post" style="display:none;"></form>
 
     <div class="order-items-strip" th:if="${not #lists.isEmpty(order.orderItems)}">
       <span class="items-label">Items:</span>
@@ -934,6 +1000,85 @@
     });
   })();
 </script>
+<!-- ══ ORDER ACTION CONFIRM MODAL (Cancel / Refund) ══ -->
+<div id="orderActionModal" class="order-modal-overlay">
+  <div class="order-modal-box">
+    <div id="orderActionIcon" class="order-modal-icon danger">
+      <i id="orderActionIconGlyph" class="bi bi-x-circle"></i>
+    </div>
+    <div id="orderActionTitle" class="order-modal-title">Cancel this order?</div>
+    <p id="orderActionSub" class="order-modal-sub">
+      Are you sure you want to cancel order <strong id="orderActionNumber">NEX-12345</strong>? This can't be undone.
+    </p>
+    <div class="order-modal-actions">
+      <button type="button" class="order-modal-btn-secondary" onclick="closeOrderActionModal()">Go Back</button>
+      <button type="button" id="orderActionConfirmBtn" class="order-modal-btn-confirm danger" onclick="submitOrderAction()">
+        <i id="orderActionConfirmGlyph" class="bi bi-x-circle"></i>
+        <span id="orderActionConfirmLabel">Cancel Order</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let _orderActionFormId = null;
+
+  function openOrderActionModal(btn, action) {
+    const orderId     = btn.getAttribute('data-order-id');
+    const orderNumber = btn.getAttribute('data-order-number');
+    _orderActionFormId = (action === 'cancel' ? 'cancelForm-' : 'refundForm-') + orderId;
+
+    const icon        = document.getElementById('orderActionIcon');
+    const iconGlyph   = document.getElementById('orderActionIconGlyph');
+    const title       = document.getElementById('orderActionTitle');
+    const numberEl    = document.getElementById('orderActionNumber');
+    const confirmBtn  = document.getElementById('orderActionConfirmBtn');
+    const confirmGlyph= document.getElementById('orderActionConfirmGlyph');
+    const confirmLabel= document.getElementById('orderActionConfirmLabel');
+
+    numberEl.textContent = orderNumber;
+
+    if (action === 'cancel') {
+      icon.className = 'order-modal-icon danger';
+      iconGlyph.className = 'bi bi-x-circle';
+      title.textContent = 'Cancel this order?';
+      confirmBtn.className = 'order-modal-btn-confirm danger';
+      confirmGlyph.className = 'bi bi-x-circle';
+      confirmLabel.textContent = 'Cancel Order';
+    } else {
+      icon.className = 'order-modal-icon purple';
+      iconGlyph.className = 'bi bi-arrow-counterclockwise';
+      title.textContent = 'Request a refund?';
+      confirmBtn.className = 'order-modal-btn-confirm purple';
+      confirmGlyph.className = 'bi bi-arrow-counterclockwise';
+      confirmLabel.textContent = 'Request Refund';
+    }
+
+    document.getElementById('orderActionModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeOrderActionModal() {
+    document.getElementById('orderActionModal').classList.remove('show');
+    document.body.style.overflow = '';
+    _orderActionFormId = null;
+  }
+
+  function submitOrderAction() {
+    if (_orderActionFormId) {
+      const form = document.getElementById(_orderActionFormId);
+      if (form) form.submit();
+    }
+  }
+
+  document.getElementById('orderActionModal').addEventListener('click', function(e) {
+    if (e.target === this) closeOrderActionModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeOrderActionModal();
+  });
+</script>
+
 <!-- ══ SIGN-OUT CONFIRM MODAL ══ -->
 <div id="signOutModal" style="
   display:none; position:fixed; inset:0; z-index:9999;

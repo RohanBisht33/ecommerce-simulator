@@ -1,19 +1,21 @@
 package com.ecommerce.controller;
 
-import com.ecommerce.entity.Order;
-import com.ecommerce.entity.Product;
-import com.ecommerce.entity.User;
+import com.ecommerce.entity.*;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepository;
 import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.service.CartService;
 import com.ecommerce.service.OrderService;
+import com.ecommerce.service.ProductService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
@@ -28,14 +30,16 @@ public class OrderController {
     private final CartService cartService;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
+    private final ProductService productService;
 
     public OrderController(OrderService orderService, ProductRepository productRepository,
-                           CartService cartService, UserRepository userRepository, OrderRepository orderRepository) {
+                           CartService cartService, UserRepository userRepository, OrderRepository orderRepository, ProductService productService) {
         this.orderService = orderService;
         this.productRepository = productRepository;
         this.cartService = cartService;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
+        this.productService = productService;
     }
 
     // 🔍 Display Itemized Order Receipt Sheet View
@@ -153,5 +157,77 @@ public class OrderController {
         model.addAttribute("discount", BigDecimal.ZERO);
         model.addAttribute("tax", tax);
         model.addAttribute("total", total);
+    }
+
+    @Transactional
+    @PostMapping("/orders/cancel/{id}")
+    public String cancelOrder(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        if (principal == null) {
+            return "redirect:/login";
+        }
+
+        Order order = orderRepository.findOrderForUpdate(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        if (!order.getUser().getUsername().equals(principal.getName())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized action.");
+            return "redirect:/orders";
+        }
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only pending orders can be cancelled.");
+            return "redirect:/orders";
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+
+        if (order.getOrderItems() != null) {
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = productRepository.findProductForUpdate(item.getProduct().getId())
+                        .orElseThrow(() -> new RuntimeException("Product not found"));
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
+        }
+
+        orderRepository.save(order);
+        redirectAttributes.addFlashAttribute("successMessage", "Order successfully cancelled and stock restored.");
+        return "redirect:/orders";
+    }
+
+    @Transactional
+    @PostMapping("/orders/refund/{id}")
+    public String refundOrder(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        if (principal == null) {
+            return "redirect:/login";
+        }
+
+        Order order = orderRepository.findOrderForUpdate(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        if (!order.getUser().getUsername().equals(principal.getName())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized action.");
+            return "redirect:/orders";
+        }
+
+        if (order.getStatus() != OrderStatus.PROCESSING && order.getStatus() != OrderStatus.DELIVERED) {
+            redirectAttributes.addFlashAttribute("errorMessage", "This order is not eligible for a refund.");
+            return "redirect:/orders";
+        }
+
+        order.setStatus(OrderStatus.REFUNDED);
+
+        if (order.getOrderItems() != null) {
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = productRepository.findProductForUpdate(item.getProduct().getId())
+                        .orElseThrow(() -> new RuntimeException("Product not found"));
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
+        }
+
+        orderRepository.save(order);
+        redirectAttributes.addFlashAttribute("successMessage", "Refund requested successfully. Inventory updated.");
+        return "redirect:/orders";
     }
 }

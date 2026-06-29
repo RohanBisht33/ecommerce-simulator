@@ -101,6 +101,40 @@
             color: var(--brand-accent); border-top: 1px solid var(--brand-border); padding-top: 0.75rem; margin-top: 0.5rem;
         }
 
+        /* ── Admin: status change panel ── */
+        .admin-status-panel {
+            margin-top: 1.75rem; padding-top: 1.5rem;
+            border-top: 1px solid var(--brand-border);
+            display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap;
+        }
+        .admin-status-panel .field-group { flex: 1; min-width: 180px; }
+        .admin-status-panel label {
+            display: block; font-size: 0.72rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;
+        }
+        .admin-status-select {
+            width: 100%; background: var(--brand-mid); border: 1px solid var(--brand-border);
+            color: var(--text-primary); border-radius: 8px; padding: 9px 12px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+        }
+        .admin-status-select:focus { outline: none; border-color: var(--brand-accent2); }
+        .btn-save-status {
+            background: var(--brand-accent2); border: none; color: var(--brand-dark);
+            border-radius: 8px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem;
+            padding: 10px 22px; cursor: pointer;
+            transition: background var(--transition), transform 0.1s;
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+        .btn-save-status:hover { background: #3dd8bc; }
+        .btn-save-status:active { transform: scale(0.97); }
+        .admin-status-note {
+            flex: 1 1 100%; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem;
+        }
+        @media (max-width: 767px) {
+            .admin-status-panel { flex-direction: column; align-items: stretch; }
+            .btn-save-status { width: 100%; justify-content: center; }
+        }
+
         /* Mobile responsive fixes */
         @media (max-width: 767px) {
             .detail-container { margin: 1rem auto; padding: 0 0.75rem; }
@@ -276,7 +310,9 @@
 <nav class="nex-navbar">
     <div class="container d-flex align-items-center justify-content-between">
         <a href="/" class="nex-logo">Nex<span>Store</span></a>
-        <a href="/orders" class="cart-pill"><i class="bi bi-arrow-left"></i> Back to History</a>
+        <a th:href="${isAdminView != null && isAdminView} ? @{/admin/orders} : @{/orders}" class="cart-pill">
+            <i class="bi bi-arrow-left"></i> Back to <span th:text="${isAdminView != null && isAdminView} ? 'Orders' : 'History'"></span>
+        </a>
     </div>
 </nav>
 
@@ -284,14 +320,22 @@
 <div class="mobile-topbar">
     <a href="/" class="nex-logo">Nex<span>Store</span></a>
     <div class="mobile-topbar-actions">
-        <a href="/orders" class="mob-icon-btn" title="Back to Orders">
+        <a th:href="${isAdminView != null && isAdminView} ? @{/admin/orders} : @{/orders}" class="mob-icon-btn" title="Back to Orders">
             <i class="bi bi-chevron-left"></i>
         </a>
     </div>
 </div>
 
 <div class="detail-container">
-    <a href="/orders" class="back-link"><i class="bi bi-chevron-left"></i> All Orders</a>
+
+    <div th:if="${successMessage}" class="nex-alert success" style="border-radius:10px;font-size:0.88rem;padding:10px 16px;display:flex;align-items:center;gap:8px;margin-bottom:1rem;background:rgba(74,240,212,0.08);border:1px solid rgba(74,240,212,0.25);color:var(--brand-accent2);">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="nex-alert error" style="border-radius:10px;font-size:0.88rem;padding:10px 16px;display:flex;align-items:center;gap:8px;margin-bottom:1rem;background:rgba(255,76,106,0.08);border:1px solid rgba(255,76,106,0.3);color:var(--brand-danger);">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span th:text="${errorMessage}"></span>
+    </div>
 
     <div class="receipt-card">
         <div class="receipt-header">
@@ -319,6 +363,29 @@
                 <span th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">$0.00</span>
             </div>
         </div>
+
+        <!-- Admin-only: change order status. Stock is only adjusted once an admin
+             moves an order from PENDING to PROCESSING via this control. -->
+        <form th:if="${isAdminView != null && isAdminView}"
+              th:action="@{/admin/orders/{id}/status(id=${order.id})}"
+              method="post" class="admin-status-panel">
+            <div class="field-group">
+                <label for="statusSelect">Order Status</label>
+                <select id="statusSelect" name="status" class="admin-status-select">
+                    <option th:each="s : ${allStatuses}"
+                            th:value="${s}"
+                            th:text="${s}"
+                            th:selected="${s == order.status}"></option>
+                </select>
+            </div>
+            <button type="submit" class="btn-save-status">
+                <i class="bi bi-check-lg"></i> Save Status
+            </button>
+            <div class="admin-status-note" th:if="${order.status == 'PENDING'}">
+                <i class="bi bi-info-circle"></i>
+                Moving this order to <strong>PROCESSING</strong> confirms it and deducts stock for each item.
+            </div>
+        </form>
     </div>
 </div>
 
@@ -329,13 +396,13 @@
             <i class="bi bi-house-fill"></i>
             <span>Home</span>
         </a>
-        <a href="/orders" class="mob-nav-item active">
+        <a th:href="${isAdminView != null && isAdminView} ? @{/admin/orders} : @{/orders}" class="mob-nav-item active">
             <i class="bi bi-bag-check"></i>
-            <span>Orders</span>
+            <span th:text="${isAdminView != null && isAdminView} ? 'Orders' : 'History'">Orders</span>
         </a>
-        <a href="/cart" class="mob-nav-item">
-            <i class="bi bi-bag"></i>
-            <span>Cart</span>
+        <a th:if="${isAdminView != null && isAdminView}" href="/admin/products" class="mob-nav-item">
+            <i class="bi bi-boxes"></i>
+            <span>Inventory</span>
         </a>
     </div>
 </nav>
