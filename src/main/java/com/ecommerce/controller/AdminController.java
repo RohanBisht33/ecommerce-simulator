@@ -114,6 +114,9 @@ public class AdminController {
 
                 // 2. Assign the permanent cloud URL to our domain model
                 product.setImageUrl(imageUrl);
+            } else if (product.getImageUrl() != null && !product.getImageUrl().isBlank()) {
+                // Case 2: A text URL path was manually typed into the form input
+                product.setImageUrl(product.getImageUrl());
             }
 
             // 3. Commit the updated product record into PostgreSQL
