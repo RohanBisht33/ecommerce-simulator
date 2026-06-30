@@ -959,6 +959,14 @@
          th:classappend="${param.category != null and param.category[0] == 'Electronics'} ? 'active' : ''"
          class="filter-chip">Electronics</a>
 
+      <a th:href="@{/(category='Food')}"
+         th:classappend="${param.category != null and param.category[0] == 'Food'} ? 'active' : ''"
+         class="filter-chip">Food</a>
+
+      <a th:href="@{/(category='Miscellanous')}"
+         th:classappend="${param.category != null and param.category[0] == 'Miscellanous'} ? 'active' : ''"
+         class="filter-chip">Miscellanous</a>
+
       <a th:href="@{/(category='Apparel')}"
          th:classappend="${param.category != null and param.category[0] == 'Apparel'} ? 'active' : ''"
          class="filter-chip">Apparel</a>
@@ -994,6 +1002,14 @@
         <a th:href="@{/(category='Electronics')}" class="filter-option"
            th:classappend="${param.category != null and param.category[0] == 'Electronics'} ? 'active' : ''">
           <span>Electronics</span><i class="bi bi-check-lg"></i>
+        </a>
+        <a th:href="@{/(category='Food')}" class="filter-option"
+           th:classappend="${param.category != null and param.category[0] == 'Food'} ? 'active' : ''">
+          <span>Food</span><i class="bi bi-check-lg"></i>
+        </a>
+        <a th:href="@{/(category='Miscellanous')}" class="filter-option"
+           th:classappend="${param.category != null and param.category[0] == 'Miscellanous'} ? 'active' : ''">
+          <span>Miscellanous</span><i class="bi bi-check-lg"></i>
         </a>
         <a th:href="@{/(category='Apparel')}" class="filter-option"
            th:classappend="${param.category != null and param.category[0] == 'Apparel'} ? 'active' : ''">

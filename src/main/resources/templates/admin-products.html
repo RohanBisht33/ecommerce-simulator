@@ -708,6 +708,8 @@
         <!-- Desktop filter chips -->
         <a href="/admin/products" class="filter-chip" data-category="">All</a>
         <a th:href="@{/admin/products(category='Electronics')}" class="filter-chip" data-category="Electronics">Electronics</a>
+        <a th:href="@{/admin/products(category='Food')}" class="filter-chip" data-category="Food">Food</a>
+        <a th:href="@{/admin/products(category='Miscellaneous')}" class="filter-chip" data-category="Miscellaneous">Miscellaneous</a>
         <a th:href="@{/admin/products(category='Apparel')}"     class="filter-chip" data-category="Apparel">Apparel</a>
         <a th:href="@{/admin/products(category='Home')}"        class="filter-chip" data-category="Home">Home</a>
         <a th:href="@{/admin/products(category='Sports')}"      class="filter-chip" data-category="Sports">Sports</a>
@@ -722,6 +724,8 @@
           <div id="invFilterPanel" class="inv-filter-panel">
             <a href="/admin/products" class="inv-filter-option" data-cat=""><span>All</span><i class="bi bi-check-lg"></i></a>
             <a th:href="@{/admin/products(category='Electronics')}" class="inv-filter-option" data-cat="Electronics"><span>Electronics</span><i class="bi bi-check-lg"></i></a>
+            <a th:href="@{/admin/products(category='Food')}" class="inv-filter-option" data-cat="Food"><span>Food</span><i class="bi bi-check-lg"></i></a>
+            <a th:href="@{/admin/products(category='Miscellanous')}" class="inv-filter-option" data-cat="Miscellanous"><span>Miscellanous</span><i class="bi bi-check-lg"></i></a>
             <a th:href="@{/admin/products(category='Apparel')}"     class="inv-filter-option" data-cat="Apparel"><span>Apparel</span><i class="bi bi-check-lg"></i></a>
             <a th:href="@{/admin/products(category='Home')}"        class="inv-filter-option" data-cat="Home"><span>Home</span><i class="bi bi-check-lg"></i></a>
             <a th:href="@{/admin/products(category='Sports')}"      class="inv-filter-option" data-cat="Sports"><span>Sports</span><i class="bi bi-check-lg"></i></a>
@@ -849,6 +853,8 @@
           <select name="category" id="fieldCategory" class="nex-input" required>
             <option value="">Select category</option>
             <option value="Electronics">Electronics</option>
+            <option value="Food">Food</option>
+            <option value="Miscellaneous">Miscellaneous</option>
             <option value="Apparel">Apparel</option>
             <option value="Home">Home</option>
             <option value="Sports">Sports</option>
