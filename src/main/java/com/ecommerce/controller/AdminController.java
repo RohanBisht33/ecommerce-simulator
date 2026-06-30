@@ -144,7 +144,6 @@ public class AdminController {
             // 2. Safely merge basic data details
             existingProduct.setName(formProduct.getName());
             existingProduct.setPrice(formProduct.getPrice());
-            existingProduct.setSku(formProduct.getSku());
             existingProduct.setOriginalPrice(formProduct.getOriginalPrice());
             existingProduct.setCategory(formProduct.getCategory());
             existingProduct.setDiscountPercent(formProduct.getDiscountPercent());
