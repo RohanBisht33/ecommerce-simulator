@@ -7,6 +7,7 @@ import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.service.CartService;
 import com.ecommerce.service.OrderService;
 import com.ecommerce.service.ProductService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.security.Principal;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 public class OrderController {
@@ -99,6 +101,8 @@ public class OrderController {
     // 🛒 Standard Cart Checkout
     @GetMapping("/checkout")
     public String showOrderFront(Model model){
+        String checkoutToken = UUID.randomUUID().toString();
+        model.addAttribute("checkoutToken", checkoutToken);
         model.addAttribute("orderItems", cartService.getCartItems());
 
         BigDecimal subtotal = cartService.getSubTotal();
@@ -110,6 +114,8 @@ public class OrderController {
     // ⚡ Express "Buy Now" Flash Sale Instant Checkout
     @PostMapping("/buy/now/{id}")
     public String processBuyNow(@PathVariable Long id, Model model) {
+        String checkoutToken = UUID.randomUUID().toString();
+        model.addAttribute("checkoutToken", checkoutToken);
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid product ID: " + id));
 
@@ -127,21 +133,29 @@ public class OrderController {
     }
 
     @PostMapping("/checkout")
-    public String processCheckout(@RequestParam(required = false) Long productId,
+    public String processCheckout(@RequestParam("checkoutToken") String token,
+                                  @RequestParam(required = false) Long productId,
                                   @RequestParam(required = false, defaultValue = "1") Integer quantity,
                                   RedirectAttributes redirectAttributes) {
         Order completedOrder;
 
-        // 🟢 If a specific product ID is passed, process it as a single item buy now purchase
-        if (productId != null) {
-            completedOrder = orderService.createOrderForSingleProduct(productId, quantity);
-        } else {
-            // 🛒 Otherwise default back to checking out everything inside the active session cart
-            completedOrder = orderService.createOrderFromCart();
-        }
+        try{
+            if (productId != null) {
+                completedOrder = orderService.createOrderForSingleProduct(token, productId, quantity);
+            } else {
+                completedOrder = orderService.createOrderFromCart(token);
+            }
 
-        redirectAttributes.addFlashAttribute("successMessage",
-                "Order placed successfully! Tracking Number: " + completedOrder.getOrderNumber());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Order placed successfully! Tracking Number: " + completedOrder.getOrderNumber());
+        }
+        catch (DataIntegrityViolationException dive) {
+            // 1. Attach a safe error message flash attribute for the front-end layout banner
+            redirectAttributes.addFlashAttribute("errorMessage", "This order has already been processed.");
+
+            // 2. Safely redirect back to a stable page (like home or checkout) using the PRG pattern
+            return "redirect:/";
+        }
 
         return "redirect:/";
     }

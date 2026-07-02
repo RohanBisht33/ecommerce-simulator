@@ -8,6 +8,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -28,9 +30,8 @@ public class OrderService {
         this.cartService = cartService;
     }
 
-    // 🛒 Pathway A: Standard Cart Checkout
     @Transactional
-    public Order createOrderFromCart() {
+    public Order createOrderFromCart(@RequestParam("checkoutToken") String token) {
         User user = getCurrentAuthenticatedUser();
 
         Order order = new Order();
@@ -61,9 +62,8 @@ public class OrderService {
         return savedOrder;
     }
 
-    // ⚡ Pathway B: Express Single Product Checkout ("Buy Now")
     @Transactional
-    public Order createOrderForSingleProduct(Long productId, int quantity) {
+    public Order createOrderForSingleProduct(@RequestParam("checkoutToken") String token, Long productId, int quantity) {
         User user = getCurrentAuthenticatedUser();
 
         Product product = productRepository.findById(productId)
@@ -87,10 +87,10 @@ public class OrderService {
 
         order.getOrderItems().add(orderItem);
 
+        order.setIdempotencyKey(token);
         return orderRepository.save(order);
     }
 
-    // 🔑 Helper method to fetch logged-in user profile context
     private User getCurrentAuthenticatedUser() {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(currentUsername)
