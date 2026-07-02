@@ -27,22 +27,19 @@ public class AzureBlobStorageService {
             throw new IllegalArgumentException("Cannot upload an empty file.");
         }
 
-        // Secure container instance fetching
         BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
         if (!containerClient.exists()) {
             containerClient.create();
         }
 
-        // Generate a cryptographically unique filename to prevent row collision overwrites
+        // Generate a unique name to avoid overwriting existing files
         String originalFilename = file.getOriginalFilename();
         String extension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
         String uniqueBlobName = UUID.randomUUID().toString() + extension;
 
-        // Open binary stream and upload straight to Azure Cloud
         BlobClient blobClient = containerClient.getBlobClient(uniqueBlobName);
         blobClient.upload(file.getInputStream(), file.getSize(), true);
 
-        // Return the persistent public tracking URL string to save into PostgreSQL
         return blobClient.getBlobUrl();
     }
 }

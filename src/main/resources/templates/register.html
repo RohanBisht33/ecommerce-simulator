@@ -529,9 +529,9 @@
 <div class="mobile-topbar">
     <a href="/" class="nex-logo">Nex<span>Store</span></a>
     <div class="mobile-topbar-actions">
-<!--        <a href="/cart" class="mob-icon-btn" title="Cart">-->
-<!--            <i class="bi bi-bag"></i>-->
-<!--        </a>-->
+        <!--        <a href="/cart" class="mob-icon-btn" title="Cart">-->
+        <!--            <i class="bi bi-bag"></i>-->
+        <!--        </a>-->
     </div>
 </div>
 
@@ -755,10 +755,10 @@
             <i class="bi bi-house-fill"></i>
             <span>Home</span>
         </a>
-<!--        <a href="/cart" class="mob-nav-item">-->
-<!--            <i class="bi bi-bag"></i>-->
-<!--            <span>Cart</span>-->
-<!--        </a>-->
+        <!--        <a href="/cart" class="mob-nav-item">-->
+        <!--            <i class="bi bi-bag"></i>-->
+        <!--            <span>Cart</span>-->
+        <!--        </a>-->
         <a href="/login" class="mob-nav-item active">
             <i class="bi bi-person"></i>
             <span>Sign In</span>
@@ -801,25 +801,29 @@
         return Math.min(4, Math.max(0, score - (p.length < 6 ? 99 : 0)));
     }
 
-    pwd.addEventListener('input', () => {
-        const val   = pwd.value;
-        const score = val.length === 0 ? 0 : scorePassword(val);
-        segs.forEach((s, i) => {
-            s.style.background = i < score ? colors[score - 1] : 'var(--brand-border)';
+    if (pwd) {
+        pwd.addEventListener('input', () => {
+            const val   = pwd.value;
+            const score = val.length === 0 ? 0 : scorePassword(val);
+            segs.forEach((s, i) => {
+                s.style.background = i < score ? colors[score - 1] : 'var(--brand-border)';
+            });
+            label.textContent = val.length === 0 ? 'Enter a password' : labels[score - 1] || 'Too weak';
+            label.style.color = val.length === 0 ? 'var(--text-muted)' : colors[Math.max(0, score - 1)];
         });
-        label.textContent = val.length === 0 ? 'Enter a password' : labels[score - 1] || 'Too weak';
-        label.style.color = val.length === 0 ? 'var(--text-muted)' : colors[Math.max(0, score - 1)];
-    });
+    }
 
     // ── Confirm password live match indicator ──
     const confirm = document.getElementById('confirmField');
-    confirm.addEventListener('input', () => {
-        if (confirm.value.length === 0) {
-            confirm.style.borderColor = 'var(--brand-border)';
-            return;
-        }
-        confirm.style.borderColor = confirm.value === pwd.value ? '#4af0d4' : '#ff4c6a';
-    });
+    if (confirm) {
+        confirm.addEventListener('input', () => {
+            if (confirm.value.length === 0) {
+                confirm.style.borderColor = 'var(--brand-border)';
+                return;
+            }
+            confirm.style.borderColor = confirm.value === pwd.value ? '#4af0d4' : '#ff4c6a';
+        });
+    }
 </script>
 </body>
 </html>

@@ -861,7 +861,7 @@
         </button>
 
         <button type="button"
-                th:if="${order.status == 'DELIVERED' || order.status == 'SHIPPED'}"
+                th:if="${order.status == 'DELIVERED' || order.status == 'PROCESSING'}"
                 class="btn-refund-order"
                 th:attr="data-order-id=${order.id},data-order-number=${order.orderNumber}"
                 onclick="openOrderActionModal(this, 'refund')">
@@ -870,8 +870,8 @@
       </div>
     </div>
 
-    <form th:id="'cancelForm-' + ${order.id}" th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post" style="display:none;"></form>
-    <form th:id="'refundForm-' + ${order.id}" th:action="@{/orders/{id}/refund(id=${order.id})}" method="post" style="display:none;"></form>
+    <form th:id="'cancelForm-' + ${order.id}" th:action="@{/orders/cancel/{id}(id=${order.id})}" method="post" style="display:none;"></form>
+    <form th:id="'refundForm-' + ${order.id}" th:action="@{/orders/refund/{id}(id=${order.id})}" method="post" style="display:none;"></form>
 
     <div class="order-items-strip" th:if="${not #lists.isEmpty(order.orderItems)}">
       <span class="items-label">Items:</span>
@@ -973,6 +973,7 @@
   function toggleOrderFilterPanel() {
     const panel = document.getElementById('orderFilterPanel');
     const btn   = document.getElementById('orderFilterBtn');
+    if (!panel || !btn) return;
     panel.classList.toggle('open');
     btn.classList.toggle('open');
   }

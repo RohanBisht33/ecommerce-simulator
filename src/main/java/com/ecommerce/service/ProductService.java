@@ -27,10 +27,8 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    // 🛡️ Atomic, all-or-nothing stock deduction for every line item in an order.
-    // If any single item is out of stock, the whole method throws and Spring rolls
-    // back every deduction made earlier in the loop within this same transaction —
-    // so a failed confirmation never leaves the order half-deducted.
+    // Atomic stock deduction for all items in the order. If any item is out
+    // of stock, the transaction rolls back so we don't leave the order partially fulfilled.
     @Transactional
     public void deductStockForOrder(Order order) {
         for (OrderItem item : order.getOrderItems()) {

@@ -903,20 +903,26 @@
   function confirmSignOut(form) {
     _signOutForm = form;
     const modal = document.getElementById('signOutModal');
+    if (!modal) return;
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
   }
   function closeSignOutModal() {
-    document.getElementById('signOutModal').style.display = 'none';
+    const modal = document.getElementById('signOutModal');
+    if (!modal) return;
+    modal.style.display = 'none';
     document.body.style.overflow = '';
     _signOutForm = null;
   }
   function doSignOut() {
     if (_signOutForm) _signOutForm.submit();
   }
-  document.getElementById('signOutModal').addEventListener('click', function(e) {
-    if (e.target === this) closeSignOutModal();
-  });
+  const _cartSignOutModal = document.getElementById('signOutModal');
+  if (_cartSignOutModal) {
+    _cartSignOutModal.addEventListener('click', function(e) {
+      if (e.target === this) closeSignOutModal();
+    });
+  }
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeSignOutModal();
   });

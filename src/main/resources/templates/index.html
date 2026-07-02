@@ -963,9 +963,9 @@
          th:classappend="${param.category != null and param.category[0] == 'Food'} ? 'active' : ''"
          class="filter-chip">Food</a>
 
-      <a th:href="@{/(category='Miscellanous')}"
-         th:classappend="${param.category != null and param.category[0] == 'Miscellanous'} ? 'active' : ''"
-         class="filter-chip">Miscellanous</a>
+      <a th:href="@{/(category='Miscellaneous')}"
+         th:classappend="${param.category != null and param.category[0] == 'Miscellaneous'} ? 'active' : ''"
+         class="filter-chip">Miscellaneous</a>
 
       <a th:href="@{/(category='Apparel')}"
          th:classappend="${param.category != null and param.category[0] == 'Apparel'} ? 'active' : ''"
@@ -1007,9 +1007,9 @@
            th:classappend="${param.category != null and param.category[0] == 'Food'} ? 'active' : ''">
           <span>Food</span><i class="bi bi-check-lg"></i>
         </a>
-        <a th:href="@{/(category='Miscellanous')}" class="filter-option"
-           th:classappend="${param.category != null and param.category[0] == 'Miscellanous'} ? 'active' : ''">
-          <span>Miscellanous</span><i class="bi bi-check-lg"></i>
+        <a th:href="@{/(category='Miscellaneous')}" class="filter-option"
+           th:classappend="${param.category != null and param.category[0] == 'Miscellaneous'} ? 'active' : ''">
+          <span>Miscellaneous</span><i class="bi bi-check-lg"></i>
         </a>
         <a th:href="@{/(category='Apparel')}" class="filter-option"
            th:classappend="${param.category != null and param.category[0] == 'Apparel'} ? 'active' : ''">
@@ -1281,6 +1281,7 @@
     const bar = document.getElementById('mobSearchBar');
     const inp = document.getElementById('mobSearchInput');
     const icon = document.getElementById('mobSearchToggle')?.querySelector('i');
+    if (!bar) return;
     const isOpen = bar.style.display === 'block';
     if (isOpen) {
       closeMobSearch();
@@ -1310,6 +1311,7 @@
   function toggleFilterPanel() {
     const panel = document.getElementById('filterDropdownPanel');
     const btn   = document.getElementById('filterTriggerBtn');
+    if (!panel || !btn) return;
     panel.classList.toggle('open');
     btn.classList.toggle('open');
   }
@@ -1400,12 +1402,14 @@
   function confirmSignOut(form) {
     _signOutForm = form;
     const modal = document.getElementById('signOutModal');
+    if (!modal) return;
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
   }
 
   function closeSignOutModal() {
     const modal = document.getElementById('signOutModal');
+    if (!modal) return;
     modal.style.display = 'none';
     document.body.style.overflow = '';
     _signOutForm = null;
@@ -1418,9 +1422,12 @@
   }
 
   // Close on backdrop click
-  document.getElementById('signOutModal').addEventListener('click', function(e) {
-    if (e.target === this) closeSignOutModal();
-  });
+  const _signOutModal = document.getElementById('signOutModal');
+  if (_signOutModal) {
+    _signOutModal.addEventListener('click', function(e) {
+      if (e.target === this) closeSignOutModal();
+    });
+  }
 
   // Close on Escape
   document.addEventListener('keydown', function(e) {

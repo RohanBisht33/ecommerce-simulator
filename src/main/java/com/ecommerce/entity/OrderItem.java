@@ -53,7 +53,7 @@ public class OrderItem {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "product_id") // 📦 Maps link to the product sold
+    @JoinColumn(name = "product_id")
     private Product product;
 
     private Integer quantity;

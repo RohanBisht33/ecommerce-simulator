@@ -8,6 +8,7 @@ import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepository;
 import com.ecommerce.service.AzureBlobStorageService;
 import com.ecommerce.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,9 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Controller
@@ -38,10 +42,50 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public String showAdminOrders(Model model){
+    public String showAdminOrders(Model model,
+                                  @RequestParam(required = false) String status) {
 
         List<Order> allOrders = orderRepository.findAll();
-        model.addAttribute("orders", allOrders);
+
+        List<Order> filteredOrders;
+        if (status != null && !status.isBlank()) {
+            String upperStatus = status.toUpperCase();
+            filteredOrders = allOrders.stream()
+                    .filter(o -> o.getStatus() != null && o.getStatus().name().equals(upperStatus))
+                    .toList();
+            model.addAttribute("currentStatus", status.toLowerCase());
+        } else {
+            filteredOrders = allOrders;
+            model.addAttribute("currentStatus", "all");
+        }
+
+        long pendingCount = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.PENDING)
+                .count();
+
+        BigDecimal pendingValue = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.PENDING)
+                .map(o -> o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+        long confirmedToday = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.PROCESSING
+                        && o.getOrderDate() != null
+                        && o.getOrderDate().toLocalDate().equals(today))
+                .count();
+
+        long cancelledToday = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.CANCELLED
+                        && o.getOrderDate() != null
+                        && o.getOrderDate().toLocalDate().equals(today))
+                .count();
+
+        model.addAttribute("orders", filteredOrders);
+        model.addAttribute("pendingCount", pendingCount);
+        model.addAttribute("pendingValue", pendingValue);
+        model.addAttribute("confirmedToday", confirmedToday);
+        model.addAttribute("cancelledToday", cancelledToday);
 
         return "admin-orders";
     }
@@ -53,6 +97,8 @@ public class AdminController {
                 org.springframework.http.HttpStatus.NOT_FOUND, "Order not found"));
 
         model.addAttribute("order", order);
+        model.addAttribute("isAdminView", true);
+        model.addAttribute("allStatuses", OrderStatus.values());
 
         return "order-detail";
     }
@@ -72,16 +118,13 @@ public class AdminController {
             return "redirect:/admin/orders/" + id;
         }
 
-        // 📦 Decrement stock only on the PENDING -> PROCESSING transition (admin confirmation).
-        // This is intentionally NOT done anywhere else, so stock can't move until an admin
-        // has actually reviewed and confirmed the order. The whole order is deducted in one
-        // transaction, so a single out-of-stock item rolls back any earlier deductions too.
+        // Deduct stock only when transitioning from PENDING to PROCESSING.
+        // The rollback on failure ensures we don't leave the order partially fulfilled.
         if (oldStatus == OrderStatus.PENDING && newStatus == OrderStatus.PROCESSING) {
             try {
                 productService.deductStockForOrder(order);
             } catch (RuntimeException ex) {
-                // Stock for one or more items ran out before this admin confirmed it —
-                // nothing was deducted (transaction rolled back), order stays PENDING for review.
+                // Out of stock. Rollback holds the order in PENDING status.
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Could not confirm order: " + ex.getMessage());
                 return "redirect:/admin/orders/" + id;
@@ -106,24 +149,16 @@ public class AdminController {
     }
 
     @PostMapping("/products/add")
-    public String saveProduct(Product product, @RequestPart(value = "imageFile", required = false) MultipartFile imageFile) {
+    public String saveProduct(@Valid Product product, @RequestPart(value = "imageFile", required = false) MultipartFile imageFile) {
         try {
-            // 1. Stream the file binary data directly to Azure Blob Storage
             if (imageFile != null && !imageFile.isEmpty()) {
                 String imageUrl = blobStorageService.uploadImage(imageFile);
-
-                // 2. Assign the permanent cloud URL to our domain model
                 product.setImageUrl(imageUrl);
             } else if (product.getImageUrl() != null && !product.getImageUrl().isBlank()) {
-                // Case 2: A text URL path was manually typed into the form input
                 product.setImageUrl(product.getImageUrl());
             }
-
-            // 3. Commit the updated product record into PostgreSQL
             productRepository.save(product);
-
         } catch (IOException e) {
-            // In production, log this error securely and handle the failure boundary gracefully
             return "redirect:/admin/products?error=upload_failed";
         }
 
@@ -141,7 +176,6 @@ public class AdminController {
             Product existingProduct = productRepository.findProductForUpdate(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
-            // 2. Safely merge basic data details
             existingProduct.setName(formProduct.getName());
             existingProduct.setPrice(formProduct.getPrice());
             existingProduct.setOriginalPrice(formProduct.getOriginalPrice());
@@ -149,16 +183,21 @@ public class AdminController {
             existingProduct.setDiscountPercent(formProduct.getDiscountPercent());
             existingProduct.setStockCapacity(formProduct.getStockCapacity());
 
-            // 3. Concurrency-Safe Stock Logic: Update the inventory allocation explicitly
+            // Update stock based on delta. Since existingProduct was loaded with a
+            // pessimistic write lock, we can safely compute the delta relative to the current DB value
+            // and avoid concurrent overwrite issues.
             int delta = formProduct.getStock() - oldFormStock;
-            existingProduct.setStock(existingProduct.getStock() + delta);
+            int newStock = existingProduct.getStock() + delta;
+            if (newStock < 0) {
+                // Prevent negative stock from causing a database validation constraint failure.
+                return "redirect:/admin/products?error=stock_conflict";
+            }
+            existingProduct.setStock(newStock);
 
             if (imageFile != null && !imageFile.isEmpty()) {
-                // Case 1: New file uploaded — push to Azure and update existing record
                 String imageUrl = blobStorageService.uploadImage(imageFile);
                 existingProduct.setImageUrl(imageUrl);
             } else if (formProduct.getImageUrl() != null && !formProduct.getImageUrl().isBlank()) {
-                // Case 2: A text URL path was manually typed into the form input
                 existingProduct.setImageUrl(formProduct.getImageUrl());
             }
             productRepository.save(existingProduct);

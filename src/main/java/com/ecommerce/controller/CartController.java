@@ -2,7 +2,6 @@ package com.ecommerce.controller;
 
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.service.CartService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +33,7 @@ public class CartController {
         model.addAttribute("totalItems", cartService.getTotalItemsCount());
         model.addAttribute("subtotal", subtotal);
         model.addAttribute("shippingCost", shippingCost);
-        model.addAttribute("discount", BigDecimal.ZERO); // Placeholder default value
+        model.addAttribute("discount", BigDecimal.ZERO);
         model.addAttribute("tax", tax);
         model.addAttribute("total", total);
 
@@ -44,23 +43,35 @@ public class CartController {
     @PostMapping("/cart/update/{cartItemId}")
     public String updateCartItemQuantity(
             @PathVariable Long cartItemId,
-            @RequestParam String action,
-            HttpSession session) {
+            @RequestParam String action) {
 
-        Object lock = session.getAttribute("cartLock");
-        if (lock == null) {
-            lock = new Object();
-            session.setAttribute("cartLock", lock);
+        if ("increase".equals(action)) {
+            cartService.increaseQuantity(cartItemId);
+        } else if ("decrease".equals(action)) {
+            cartService.decreaseQuantity(cartItemId);
         }
 
-        synchronized (lock) {
-            if ("increase".equals(action)) {
-                cartService.increaseQuantity(cartItemId);
-            } else if ("decrease".equals(action)) {
-                cartService.decreaseQuantity(cartItemId);
-            }
-        }
+        return "redirect:/cart";
+    }
 
+    @PostMapping("/cart/remove/{cartItemId}")
+    public String removeCartItem(@PathVariable Long cartItemId) {
+        cartService.removeItem(cartItemId);
+        return "redirect:/cart";
+    }
+
+    @PostMapping("/cart/clear")
+    public String clearCart() {
+        cartService.clearCart();
+        return "redirect:/cart";
+    }
+
+    @PostMapping("/cart/promo")
+    public String applyPromoCode(@RequestParam String promoCode,
+                                 org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        // Promo codes are not implemented yet; show a message to the user
+        redirectAttributes.addFlashAttribute("promoError", "Promo codes are not available yet. Stay tuned!");
+        redirectAttributes.addFlashAttribute("appliedPromo", promoCode);
         return "redirect:/cart";
     }
 }

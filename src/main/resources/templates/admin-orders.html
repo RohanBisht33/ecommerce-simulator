@@ -845,6 +845,7 @@
   document.addEventListener('click', function (e) {
     const panel = document.getElementById('filterDropdownPanel');
     const trigger = document.getElementById('filterTriggerBtn');
+    if (!panel || !trigger) return;
     if (!panel.contains(e.target) && !trigger.contains(e.target)) {
       panel.classList.remove('open');
     }

@@ -725,7 +725,7 @@
             <a href="/admin/products" class="inv-filter-option" data-cat=""><span>All</span><i class="bi bi-check-lg"></i></a>
             <a th:href="@{/admin/products(category='Electronics')}" class="inv-filter-option" data-cat="Electronics"><span>Electronics</span><i class="bi bi-check-lg"></i></a>
             <a th:href="@{/admin/products(category='Food')}" class="inv-filter-option" data-cat="Food"><span>Food</span><i class="bi bi-check-lg"></i></a>
-            <a th:href="@{/admin/products(category='Miscellanous')}" class="inv-filter-option" data-cat="Miscellanous"><span>Miscellanous</span><i class="bi bi-check-lg"></i></a>
+            <a th:href="@{/admin/products(category='Miscellaneous')}" class="inv-filter-option" data-cat="Miscellaneous"><span>Miscellaneous</span><i class="bi bi-check-lg"></i></a>
             <a th:href="@{/admin/products(category='Apparel')}"     class="inv-filter-option" data-cat="Apparel"><span>Apparel</span><i class="bi bi-check-lg"></i></a>
             <a th:href="@{/admin/products(category='Home')}"        class="inv-filter-option" data-cat="Home"><span>Home</span><i class="bi bi-check-lg"></i></a>
             <a th:href="@{/admin/products(category='Sports')}"      class="inv-filter-option" data-cat="Sports"><span>Sports</span><i class="bi bi-check-lg"></i></a>
@@ -910,7 +910,7 @@
           <div id="imageUrlSection">
             <input type="url" name="imageUrl" id="fieldImage" class="nex-input"
                    placeholder="https://example.com/image.jpg" oninput="handleUrlInput(this)" />
-            <div class="image-preview-wrap" id="imagePreviewWrap" style="display:none;">
+            <div class="image-preview-wrap d-none" id="imagePreviewWrap">
               <img id="imagePreviewImg" src="" alt="Preview" />
               <button type="button" class="image-preview-clear" onclick="clearUrlPreview()" title="Remove image">
                 <i class="bi bi-x"></i>
@@ -918,7 +918,7 @@
             </div>
           </div>
 
-          <div id="imageUploadSection" style="display:none;">
+          <div id="imageUploadSection" class="d-none">
             <div class="image-upload-area" id="uploadDropZone">
               <input type="file" name="imageFile" id="fieldImageFile" accept="image/*" onchange="handleFileSelect(this)" />
               <div class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
@@ -927,7 +927,7 @@
                 <span style="font-size:0.72rem; opacity:0.7;">PNG, JPG, WEBP — max 5 MB</span>
               </div>
             </div>
-            <div class="image-preview-wrap" id="uploadPreviewWrap" style="display:none;">
+            <div class="image-preview-wrap d-none" id="uploadPreviewWrap">
               <img id="uploadPreviewImg" src="" alt="Preview" />
               <button type="button" class="image-preview-clear" onclick="clearFileUpload()" title="Remove image">
                 <i class="bi bi-x"></i>
@@ -1055,7 +1055,7 @@
       document.getElementById(id).value = '';
     });
     document.getElementById('fieldCategory').value = '';
-    document.getElementById('imagePreviewWrap').style.display = 'none';
+    document.getElementById('imagePreviewWrap').classList.add('d-none');
     clearFileUpload();
     switchImageMode('url');
     document.getElementById('productModal').classList.add('open');
@@ -1081,7 +1081,7 @@
       const previewWrap = document.getElementById('imagePreviewWrap');
       const previewImg  = document.getElementById('imagePreviewImg');
       previewImg.src = imageUrl;
-      previewWrap.style.display = 'block';
+      previewWrap.classList.remove('d-none');
     }
     document.getElementById('productModal').classList.add('open');
   }
@@ -1120,23 +1120,23 @@
     const urlInput      = document.getElementById('fieldImage');
 
     if (mode === 'url') {
-      urlSection.style.display    = '';
-      uploadSection.style.display = 'none';
+      urlSection.classList.remove('d-none');
+      uploadSection.classList.add('d-none');
       btnUrl.classList.add('active');
       btnUpload.classList.remove('active');
       fileInput.disabled = true;
       fileInput.value = '';
       urlInput.disabled  = false;
     } else {
-      urlSection.style.display    = 'none';
-      uploadSection.style.display = '';
+      urlSection.classList.add('d-none');
+      uploadSection.classList.remove('d-none');
       btnUrl.classList.remove('active');
       btnUpload.classList.add('active');
       urlInput.value    = '';
       urlInput.disabled = true;
       fileInput.disabled = false;
       fileInput.value = '';
-      document.getElementById('imagePreviewWrap').style.display = 'none';
+      document.getElementById('imagePreviewWrap').classList.add('d-none');
     }
   }
 
@@ -1146,15 +1146,15 @@
     const img  = document.getElementById('imagePreviewImg');
     if (val) {
       img.src = val;
-      wrap.style.display = 'block';
+      wrap.classList.remove('d-none');
     } else {
-      wrap.style.display = 'none';
+      wrap.classList.add('d-none');
     }
   }
 
   function clearUrlPreview() {
     document.getElementById('fieldImage').value = '';
-    document.getElementById('imagePreviewWrap').style.display = 'none';
+    document.getElementById('imagePreviewWrap').classList.add('d-none');
   }
 
   function handleFileSelect(input) {
@@ -1163,9 +1163,9 @@
     const reader = new FileReader();
     reader.onload = e => {
       document.getElementById('uploadPreviewImg').src = e.target.result;
-      document.getElementById('uploadPreviewWrap').style.display = 'block';
-      document.querySelector('.upload-icon').style.display = 'none';
-      document.querySelector('.upload-text').style.display  = 'none';
+      document.getElementById('uploadPreviewWrap').classList.remove('d-none');
+      document.querySelector('.upload-icon').classList.add('d-none');
+      document.querySelector('.upload-text').classList.add('d-none');
     };
     reader.readAsDataURL(file);
   }
@@ -1174,11 +1174,11 @@
     const fi = document.getElementById('fieldImageFile');
     if (fi) fi.value = '';
     const wrap = document.getElementById('uploadPreviewWrap');
-    if (wrap) wrap.style.display = 'none';
+    if (wrap) wrap.classList.add('d-none');
     const icon = document.querySelector('.upload-icon');
     const text = document.querySelector('.upload-text');
-    if (icon) icon.style.display = '';
-    if (text) text.style.display  = '';
+    if (icon) icon.classList.remove('d-none');
+    if (text) text.classList.remove('d-none');
   }
 
   function autoCalculateDiscount() {

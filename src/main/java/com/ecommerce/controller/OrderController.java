@@ -45,41 +45,35 @@ public class OrderController {
         this.productService = productService;
     }
 
-    // 🔍 Display Itemized Order Receipt Sheet View
     @GetMapping("/orders/{id}")
     public String showOrderDetail(@PathVariable Long id, Principal principal, Model model) {
         if (principal == null) {
             return "redirect:/login";
         }
 
-        // 1. Fetch the order or fail if it doesn't exist
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + id));
 
-        // 🛡️ Security Check: Ensure users can only view their own orders
+        // Ensure users can only access their own orders
         if (!order.getUser().getUsername().equals(principal.getName())) {
             return "redirect:/orders";
         }
 
-        // 2. Inject dataset into the detail template scope
         model.addAttribute("order", order);
         return "order-detail";
     }
-    
-    // 📦 Display Secure User Order History Dashboard View
+
     @GetMapping("/orders")
     public String showOrderHistory(Principal principal, Model model, @RequestParam(required = false) String status) {
         if (principal == null) {
             return "redirect:/login";
         }
 
-        // 1. Fetch the active user context profile from database
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found"));
 
         List<Order> orders;
 
-        // 2. Process conditional filter matching based on chosen dashboard chip
         if (status != null && !status.trim().isEmpty()) {
             orders = orderRepository.findByUserAndStatus(user, status.toUpperCase());
             model.addAttribute("currentStatus", status.toLowerCase());
@@ -88,23 +82,23 @@ public class OrderController {
             model.addAttribute("currentStatus", "all");
         }
 
-        // 📊 3. Pre-calculate total spent on the backend to fix the Thymeleaf parsing crash
+        // Pre-calculate the total spent to avoid issues parsing/evaluating inside the Thymeleaf template
         double totalSpent = orders.stream()
                 .mapToDouble(o -> o.getTotalAmount() != null ? o.getTotalAmount().doubleValue() : 0.0)
                 .sum();
 
-        // 4. Inject datasets into Thymeleaf template scope
         model.addAttribute("orders", orders);
-        model.addAttribute("totalSpent", totalSpent); // 🟢 Safely bound pre-calculated variable
+        model.addAttribute("totalSpent", totalSpent);
         return "orders";
     }
 
-    // 🛒 Standard Cart Checkout
     @GetMapping("/checkout")
-    public String showOrderFront(Model model){
+    public String showOrderFront(Model model) {
         String checkoutToken = UUID.randomUUID().toString();
         model.addAttribute("checkoutToken", checkoutToken);
         model.addAttribute("orderItems", cartService.getCartItems());
+        // Verify cart snapshot to detect concurrent modifications or tampering during checkout
+        model.addAttribute("cartSnapshotString", cartService.getCartSnapshotSignature());
 
         BigDecimal subtotal = cartService.getSubTotal();
         calculateAndModelFinancials(subtotal, cartService.getTotalItemsCount(), model);
@@ -112,7 +106,6 @@ public class OrderController {
         return "checkout";
     }
 
-    // ⚡ Express "Buy Now" Flash Sale Instant Checkout
     @PostMapping("/buy/now/{id}")
     public String processBuyNow(@PathVariable Long id, Model model) {
         String checkoutToken = UUID.randomUUID().toString();
@@ -136,7 +129,6 @@ public class OrderController {
     @PostMapping("/checkout")
     public String processCheckout(@RequestParam("checkoutToken") String token,
                                   @RequestParam("cartSnapshot") String submittedSnapshot,
-                                  @RequestParam("cartVersion") Long submittedVersion,
                                   @RequestParam(required = false) Long productId,
                                   @RequestParam(required = false, defaultValue = "1") Integer quantity,
                                   RedirectAttributes redirectAttributes) {
@@ -149,7 +141,7 @@ public class OrderController {
                 if (!currentSessionSnapshot.equals(submittedSnapshot)) {
                     redirectAttributes.addFlashAttribute("errorMessage",
                             "Your cart was modified in another tab. Please review your total items and try again.");
-                    return "redirect:/checkout"; // Redirect back to review the changes safely
+                    return "redirect:/checkout";
                 }
             }
 
@@ -163,14 +155,12 @@ public class OrderController {
                     "Order placed successfully! Tracking Number: " + completedOrder.getOrderNumber());
         }
         catch (DataIntegrityViolationException dive) {
-            // 1. Attach a safe error message flash attribute for the front-end layout banner
             redirectAttributes.addFlashAttribute("errorMessage", "This order has already been processed.");
 
-            // 2. Safely redirect back to a stable page (like home or checkout) using the PRG pattern
             return "redirect:/";
         }
         catch (ObjectOptimisticLockingFailureException oolfe) {
-            // 🟢 Caught! Tab 2 modified the cart while checkout was in flight!
+            // Handle concurrent cart updates during checkout
             redirectAttributes.addFlashAttribute("errorMessage", "Your cart was modified in another tab. Please review your order totals and try again.");
         }
 

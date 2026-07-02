@@ -33,18 +33,17 @@ public class Product {
     @Column(nullable = false)
     private Integer stockCapacity = 100;
 
-    // 🖼️ New Field: Stores the path or URL string of the product image
     @Column(length = 1000)
     private String imageUrl;
 
-    private Integer discountPercent = 0; // Standard integer field initialized to 0% discount
+    private Integer discountPercent = 0;
 
     @NotBlank(message = "Category field cannot be empty")
     @Column(nullable = false)
     private String category;
 
     @NotBlank(message = "Product SKU cannot be blank")
-    @Column(nullable = false, unique = true) // Enforces data integrity with a UNIQUE database constraint
+    @Column(nullable = false, unique = true)
     private String sku;
 
     public Product() {
@@ -54,9 +53,9 @@ public class Product {
         this.id = id;
         this.name = name;
         this.price = price;
-        this.originalPrice = originalPrice; // Added
+        this.originalPrice = originalPrice;
         this.stock = stock;
-        this.stockCapacity = stockCapacity; // Added
+        this.stockCapacity = stockCapacity;
         this.imageUrl = imageUrl;
         this.discountPercent = discountPercent;
         this.category = category;
@@ -95,7 +94,6 @@ public class Product {
         return stock;
     }
 
-    // Getter for Thymeleaf rendering engine
     public String getImageUrl() {
         return imageUrl;
     }
@@ -128,7 +126,7 @@ public class Product {
         this.discountPercent = discountPercent;
     }
 
-    // ── New getters/setters ──────────────────────────────────────────────────
+
 
     public BigDecimal getOriginalPrice() {
         return originalPrice;

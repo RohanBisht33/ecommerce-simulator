@@ -38,6 +38,7 @@ public class ProductController {
         else {
             model.addAttribute("products", productRepository.findByCategory(category));
         }
+        model.addAttribute("cartItemCount", cartService.getTotalItemsCount());
         return "index";
     }
 
@@ -48,7 +49,6 @@ public class ProductController {
                             @RequestParam(required = false) Boolean buyNow,
                             RedirectAttributes redirectAttributes) {
         try {
-            // Concurrency Safe Deduction using Pessimistic Write Lock
             Product product = productService.verifyAndDeductStock(id, quantity);
 
             for (int i = 0; i < quantity; i++) {
@@ -79,6 +79,7 @@ public class ProductController {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         model.addAttribute("product", product);
+        model.addAttribute("cartItemCount", cartService.getTotalItemsCount());
         return "product-detail";
     }
 }

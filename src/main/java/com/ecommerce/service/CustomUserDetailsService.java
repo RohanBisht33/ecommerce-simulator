@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-@Service // ⚙️ This tells Spring to automatically inject this into the SecurityFilterChain
+@Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -18,15 +18,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 1. Fetch our custom entity from the PostgreSQL/H2 database
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found in database"));
 
-        // 2. Translate it into Spring Security's required UserDetails format
-        // Your DB stores "ROLE_CUSTOMER" and "ROLE_ADMIN" — use authorities() which takes the value as-is
+        // Translate to UserDetails; user.getRole() already includes the "ROLE_" prefix.
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
-                .authorities(user.getRole())  // "ROLE_CUSTOMER" stays "ROLE_CUSTOMER" ✓
-                .build();    }
+                .authorities(user.getRole())
+                .build();
+    }
 }
