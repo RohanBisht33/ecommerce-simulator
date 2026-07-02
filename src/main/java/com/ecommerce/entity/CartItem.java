@@ -10,7 +10,7 @@ public class CartItem {
     }
 
     public CartItem(Long id, Product product, Integer quantity){
-        this.id = id;
+        this.id = id;   
         this.product = product;
         this.quantity = quantity;
     }

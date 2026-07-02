@@ -2,6 +2,7 @@ package com.ecommerce.controller;
 
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.service.CartService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,12 +44,21 @@ public class CartController {
     @PostMapping("/cart/update/{cartItemId}")
     public String updateCartItemQuantity(
             @PathVariable Long cartItemId,
-            @RequestParam String action) {
+            @RequestParam String action,
+            HttpSession session) {
 
-        if ("increase".equals(action)) {
-            cartService.increaseQuantity(cartItemId);
-        } else if ("decrease".equals(action)) {
-            cartService.decreaseQuantity(cartItemId);
+        Object lock = session.getAttribute("cartLock");
+        if (lock == null) {
+            lock = new Object();
+            session.setAttribute("cartLock", lock);
+        }
+
+        synchronized (lock) {
+            if ("increase".equals(action)) {
+                cartService.increaseQuantity(cartItemId);
+            } else if ("decrease".equals(action)) {
+                cartService.decreaseQuantity(cartItemId);
+            }
         }
 
         return "redirect:/cart";

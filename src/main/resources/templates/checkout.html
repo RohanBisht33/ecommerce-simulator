@@ -417,6 +417,7 @@
 
     <form th:action="@{/checkout}" method="post">
         <input type="hidden" name="checkoutToken" th:value="${checkoutToken}" />
+        <input type="hidden" name="cartSnapshot" th:value="${cartSnapshotString}" />
         <input type="hidden" name="productId"
 
                th:value="${#lists.size(orderItems) == 1} ? ${orderItems[0].product.id} : ''" />

@@ -9,6 +9,7 @@ import com.ecommerce.service.OrderService;
 import com.ecommerce.service.ProductService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -134,12 +135,24 @@ public class OrderController {
 
     @PostMapping("/checkout")
     public String processCheckout(@RequestParam("checkoutToken") String token,
+                                  @RequestParam("cartSnapshot") String submittedSnapshot,
+                                  @RequestParam("cartVersion") Long submittedVersion,
                                   @RequestParam(required = false) Long productId,
                                   @RequestParam(required = false, defaultValue = "1") Integer quantity,
                                   RedirectAttributes redirectAttributes) {
         Order completedOrder;
 
         try{
+            if (productId == null) {
+                String currentSessionSnapshot = cartService.getCartSnapshotSignature();
+
+                if (!currentSessionSnapshot.equals(submittedSnapshot)) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                            "Your cart was modified in another tab. Please review your total items and try again.");
+                    return "redirect:/checkout"; // Redirect back to review the changes safely
+                }
+            }
+
             if (productId != null) {
                 completedOrder = orderService.createOrderForSingleProduct(token, productId, quantity);
             } else {
@@ -155,6 +168,10 @@ public class OrderController {
 
             // 2. Safely redirect back to a stable page (like home or checkout) using the PRG pattern
             return "redirect:/";
+        }
+        catch (ObjectOptimisticLockingFailureException oolfe) {
+            // 🟢 Caught! Tab 2 modified the cart while checkout was in flight!
+            redirectAttributes.addFlashAttribute("errorMessage", "Your cart was modified in another tab. Please review your order totals and try again.");
         }
 
         return "redirect:/";

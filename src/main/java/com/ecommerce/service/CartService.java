@@ -63,4 +63,17 @@ public class CartService {
     public int getTotalItemsCount(){
         return items.values().stream().mapToInt(CartItem::getQuantity).sum();
     }
+
+    public String getCartSnapshotSignature(){
+
+        StringBuilder sb = new StringBuilder();
+
+        for(CartItem item: this.getCartItems()){
+            sb.append(item.getProduct().getId());
+            sb.append(":");
+            sb.append(item.getQuantity());
+            sb.append(",");
+        }
+        return sb.toString()    ;
+    }
 }
