@@ -17,5 +17,15 @@ RUN mkdir -p uploads
 
 EXPOSE 8080
 
-# Clean entrypoint that allows Spring to safely bind configurations from Azure environment variables
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# -XX:TieredStopAtLevel=1 skips C2 JIT compilation during startup — trades a small
+# amount of steady-state throughput for meaningfully faster cold boot, which is
+# what actually matters for passing Azure's container startup probe.
+# -Xshare:auto lets the JVM use Class Data Sharing if a shared archive is present,
+# and falls back gracefully if it isn't (safe default, no extra build step required).
+# -XX:+UseSerialGC reduces GC-thread setup overhead at boot; fine for a single-core
+# App Service plan, revisit if you move to a plan with more cores under real load.
+ENTRYPOINT ["java", \
+            "-XX:TieredStopAtLevel=1", \
+            "-Xshare:auto", \
+            "-XX:+UseSerialGC", \
+            "-jar", "app.jar"]
