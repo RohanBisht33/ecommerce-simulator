@@ -23,7 +23,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // avoiding N+1 select performance issues when rendering order lists.
 
     @Override
-    @EntityGraph(attributePaths = {"orderItems", "orderItems.product"})
+    @EntityGraph(attributePaths = {"user", "orderItems", "orderItems.product"})
     List<Order> findAll();
 
     @EntityGraph(attributePaths = {"orderItems", "orderItems.product"})
@@ -31,6 +31,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @EntityGraph(attributePaths = {"orderItems", "orderItems.product"})
     List<Order> findByUserAndStatus(User user, String status);
+
+    @Override
+    @EntityGraph(attributePaths = {"user", "orderItems", "orderItems.product"})
+    Optional<Order> findById(Long id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @EntityGraph(attributePaths = {"orderItems", "orderItems.product"})

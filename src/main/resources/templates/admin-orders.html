@@ -714,12 +714,12 @@
         </div>
       </div>
       <span class="order-status"
-            th:classappend="${order.status == 'DELIVERED'}  ? 'status-delivered'  :
-                           (${order.status == 'PROCESSING'} ? 'status-processing' :
-                           (${order.status == 'SHIPPED'}    ? 'status-shipped'    :
-                           (${order.status == 'CANCELLED'}  ? 'status-cancelled'  :
-                           (${order.status == 'REFUNDED'}  ? 'status-refunded'  :
-                                                              'status-pending')))"
+            th:classappend="${order.status == 'DELIVERED'  ? 'status-delivered'  :
+                            (order.status == 'PROCESSING' ? 'status-processing' :
+                            (order.status == 'SHIPPED'    ? 'status-shipped'    :
+                            (order.status == 'CANCELLED'  ? 'status-cancelled'  :
+                            (order.status == 'REFUNDED'   ? 'status-refunded'   :
+                                                             'status-pending'))))}"
             th:text="${order.status}">PENDING</span>
     </div>
 

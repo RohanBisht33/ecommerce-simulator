@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
+
 
 @Controller
 public class ProductController {
@@ -47,7 +49,13 @@ public class ProductController {
                             @RequestParam(defaultValue = "1") Integer quantity,
                             @RequestParam(required = false) String redirectUrl,
                             @RequestParam(required = false) Boolean buyNow,
+                            Principal principal,
                             RedirectAttributes redirectAttributes) {
+        if (principal == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Please log in to add items to your cart.");
+            return "redirect:/login";
+        }
+
         try {
             Product product = productService.verifyAndDeductStock(id, quantity);
 
