@@ -1,12 +1,14 @@
 package com.ecommerce.controller;
 
 import com.ecommerce.entity.*;
+import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepository;
-import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.service.CartService;
 import com.ecommerce.service.OrderService;
+import com.ecommerce.service.OrderStatusService;
 import com.ecommerce.service.ProductService;
+import com.ecommerce.util.OrderFinancials;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -20,8 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.security.Principal;
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -34,15 +36,19 @@ public class OrderController {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final ProductService productService;
+    private final OrderStatusService orderStatusService;
 
     public OrderController(OrderService orderService, ProductRepository productRepository,
-                           CartService cartService, UserRepository userRepository, OrderRepository orderRepository, ProductService productService) {
+                           CartService cartService, UserRepository userRepository,
+                           OrderRepository orderRepository, ProductService productService,
+                           OrderStatusService orderStatusService) {
         this.orderService = orderService;
         this.productRepository = productRepository;
         this.cartService = cartService;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.productService = productService;
+        this.orderStatusService = orderStatusService;
     }
 
     @GetMapping("/orders/{id}")
@@ -52,9 +58,8 @@ public class OrderController {
         }
 
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
-        // Ensure users can only access their own orders
         if (!order.getUser().getUsername().equals(principal.getName())) {
             return "redirect:/orders";
         }
@@ -75,14 +80,13 @@ public class OrderController {
         List<Order> orders;
 
         if (status != null && !status.trim().isEmpty()) {
-            orders = orderRepository.findByUserAndStatus(user, status.toUpperCase());
+            orders = orderRepository.findByUserAndStatus(user, OrderStatus.valueOf(status.toUpperCase()));
             model.addAttribute("currentStatus", status.toLowerCase());
         } else {
             orders = orderRepository.findByUser(user);
             model.addAttribute("currentStatus", "all");
         }
 
-        // Pre-calculate the total spent to avoid issues parsing/evaluating inside the Thymeleaf template
         double totalSpent = orders.stream()
                 .mapToDouble(o -> o.getTotalAmount() != null ? o.getTotalAmount().doubleValue() : 0.0)
                 .sum();
@@ -97,7 +101,6 @@ public class OrderController {
         String checkoutToken = UUID.randomUUID().toString();
         model.addAttribute("checkoutToken", checkoutToken);
         model.addAttribute("orderItems", cartService.getCartItems());
-        // Verify cart snapshot to detect concurrent modifications or tampering during checkout
         model.addAttribute("cartSnapshotString", cartService.getCartSnapshotSignature());
 
         BigDecimal subtotal = cartService.getSubTotal();
@@ -111,11 +114,16 @@ public class OrderController {
         String checkoutToken = UUID.randomUUID().toString();
         model.addAttribute("checkoutToken", checkoutToken);
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid product ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
         var temporaryItem = new Object() {
-            public Product getProduct() { return product; }
-            public int getQuantity() { return 1; }
+            public Product getProduct() {
+                return product;
+            }
+
+            public int getQuantity() {
+                return 1;
+            }
         };
 
         model.addAttribute("orderItems", Collections.singletonList(temporaryItem));
@@ -134,7 +142,7 @@ public class OrderController {
                                   RedirectAttributes redirectAttributes) {
         Order completedOrder;
 
-        try{
+        try {
             if (productId == null) {
                 String currentSessionSnapshot = cartService.getCartSnapshotSignature();
 
@@ -153,24 +161,23 @@ public class OrderController {
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Order placed successfully! Tracking Number: " + completedOrder.getOrderNumber());
-        }
-        catch (DataIntegrityViolationException dive) {
+        } catch (DataIntegrityViolationException dive) {
             redirectAttributes.addFlashAttribute("errorMessage", "This order has already been processed.");
-
             return "redirect:/";
-        }
-        catch (ObjectOptimisticLockingFailureException oolfe) {
-            // Handle concurrent cart updates during checkout
-            redirectAttributes.addFlashAttribute("errorMessage", "Your cart was modified in another tab. Please review your order totals and try again.");
+        } catch (ObjectOptimisticLockingFailureException oolfe) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Your cart was modified in another tab. Please review your order totals and try again.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
 
         return "redirect:/";
     }
 
     private void calculateAndModelFinancials(BigDecimal subtotal, int itemResetCount, Model model) {
-        BigDecimal shippingCost = subtotal.compareTo(new BigDecimal("50")) >= 0 ? BigDecimal.ZERO : new BigDecimal("5.99");
-        BigDecimal tax = subtotal.multiply(new BigDecimal("0.05"));
-        BigDecimal total = subtotal.add(shippingCost).add(tax);
+        BigDecimal shippingCost = OrderFinancials.calculateShipping(subtotal);
+        BigDecimal tax = OrderFinancials.calculateTax(subtotal);
+        BigDecimal total = OrderFinancials.calculateTotal(subtotal);
 
         model.addAttribute("totalItems", itemResetCount);
         model.addAttribute("subtotal", subtotal);
@@ -195,24 +202,17 @@ public class OrderController {
             return "redirect:/orders";
         }
 
-        if (order.getStatus() != OrderStatus.PENDING) {
+        OrderStatus oldStatus = order.getStatus();
+        OrderStatus newStatus = OrderStatus.CANCELLED;
+
+        if (!orderStatusService.isTransitionAllowed(oldStatus, newStatus)) {
             redirectAttributes.addFlashAttribute("errorMessage", "Only pending orders can be cancelled.");
             return "redirect:/orders";
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
-
-        if (order.getOrderItems() != null) {
-            for (OrderItem item : order.getOrderItems()) {
-                Product product = productRepository.findProductForUpdate(item.getProduct().getId())
-                        .orElseThrow(() -> new RuntimeException("Product not found"));
-                product.setStock(product.getStock() + item.getQuantity());
-                productRepository.save(product);
-            }
-        }
-
+        order.setStatus(newStatus);
         orderRepository.save(order);
-        redirectAttributes.addFlashAttribute("successMessage", "Order successfully cancelled and stock restored.");
+        redirectAttributes.addFlashAttribute("successMessage", "Order successfully cancelled.");
         return "redirect:/orders";
     }
 
@@ -231,22 +231,19 @@ public class OrderController {
             return "redirect:/orders";
         }
 
-        if (order.getStatus() != OrderStatus.PROCESSING && order.getStatus() != OrderStatus.DELIVERED) {
+        OrderStatus oldStatus = order.getStatus();
+        OrderStatus newStatus = OrderStatus.REFUNDED;
+
+        if (!orderStatusService.isTransitionAllowed(oldStatus, newStatus)) {
             redirectAttributes.addFlashAttribute("errorMessage", "This order is not eligible for a refund.");
             return "redirect:/orders";
         }
 
-        order.setStatus(OrderStatus.REFUNDED);
-
-        if (order.getOrderItems() != null) {
-            for (OrderItem item : order.getOrderItems()) {
-                Product product = productRepository.findProductForUpdate(item.getProduct().getId())
-                        .orElseThrow(() -> new RuntimeException("Product not found"));
-                product.setStock(product.getStock() + item.getQuantity());
-                productRepository.save(product);
-            }
+        if (orderStatusService.requiresStockRestoration(oldStatus, newStatus)) {
+            productService.restoreStockForOrder(order);
         }
 
+        order.setStatus(newStatus);
         orderRepository.save(order);
         redirectAttributes.addFlashAttribute("successMessage", "Refund requested successfully. Inventory updated.");
         return "redirect:/orders";

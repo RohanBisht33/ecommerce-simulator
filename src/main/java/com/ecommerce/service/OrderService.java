@@ -4,11 +4,11 @@ import com.ecommerce.entity.*;
 import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepository;
+import com.ecommerce.util.OrderFinancials;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,32 +21,41 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartService cartService;
+    private final ProductService productService;
 
     public OrderService(OrderRepository orderRepository, ProductRepository productRepository,
-                        UserRepository userRepository, CartService cartService) {
+                        UserRepository userRepository, CartService cartService,
+                        ProductService productService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.cartService = cartService;
+        this.productService = productService;
     }
 
     @Transactional
-    public Order createOrderFromCart(@RequestParam("checkoutToken") String token) {
+    public Order createOrderFromCart(String token) {
+        rejectDuplicateToken(token);
+
         User user = getCurrentAuthenticatedUser();
+        BigDecimal subtotal = cartService.getSubTotal();
+
+        for (CartItem cartItem : cartService.getCartItems()) {
+            productService.verifyStockAvailable(
+                    cartItem.getProduct().getId(), cartItem.getQuantity());
+        }
 
         Order order = new Order();
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(OrderStatus.PENDING);
-        order.setTotalAmount(cartService.getSubTotal());
+        order.setTotalAmount(OrderFinancials.calculateTotal(subtotal));
         order.setUser(user);
+        order.setIdempotencyKey(token);
 
         for (CartItem cartItem : cartService.getCartItems()) {
             Product product = productRepository.findById(cartItem.getProduct().getId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
-
-            product.setStock(product.getStock() - cartItem.getQuantity());
-            productRepository.save(product);
+                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
             OrderItem orderItem = new OrderItem();
             orderItem.setProduct(product);
@@ -63,21 +72,24 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrderForSingleProduct(@RequestParam("checkoutToken") String token, Long productId, int quantity) {
+    public Order createOrderForSingleProduct(String token, Long productId, int quantity) {
+        rejectDuplicateToken(token);
+
         User user = getCurrentAuthenticatedUser();
+        productService.verifyStockAvailable(productId, quantity);
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        product.setStock(product.getStock() - quantity);
-        productRepository.save(product);
+        BigDecimal subtotal = product.getPrice().multiply(BigDecimal.valueOf(quantity));
 
         Order order = new Order();
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(OrderStatus.PENDING);
         order.setUser(user);
-        order.setTotalAmount(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
+        order.setTotalAmount(OrderFinancials.calculateTotal(subtotal));
+        order.setIdempotencyKey(token);
 
         OrderItem orderItem = new OrderItem();
         orderItem.setProduct(product);
@@ -87,8 +99,14 @@ public class OrderService {
 
         order.getOrderItems().add(orderItem);
 
-        order.setIdempotencyKey(token);
         return orderRepository.save(order);
+    }
+
+    private void rejectDuplicateToken(String token) {
+        if (orderRepository.findByIdempotencyKey(token).isPresent()) {
+            throw new org.springframework.dao.DataIntegrityViolationException(
+                    "Order with idempotency key already exists");
+        }
     }
 
     private User getCurrentAuthenticatedUser() {

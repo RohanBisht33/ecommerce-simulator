@@ -3,10 +3,10 @@ package com.ecommerce.controller;
 import com.ecommerce.entity.Product;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.service.CartService;
-
+import com.ecommerce.service.ProductService;
+import com.ecommerce.util.RedirectValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import com.ecommerce.service.ProductService;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,15 +17,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 
-
 @Controller
 public class ProductController {
     private final ProductRepository productRepository;
     private final CartService cartService;
     private final ProductService productService;
 
-
-    public ProductController(ProductRepository productRepository, CartService cartService, ProductService productService){
+    public ProductController(ProductRepository productRepository, CartService cartService, ProductService productService) {
         this.productRepository = productRepository;
         this.cartService = cartService;
         this.productService = productService;
@@ -36,8 +34,7 @@ public class ProductController {
 
         if (category == null || category.trim().isEmpty()) {
             model.addAttribute("products", productRepository.findAll());
-        }
-        else {
+        } else {
             model.addAttribute("products", productRepository.findByCategory(category));
         }
         model.addAttribute("cartItemCount", cartService.getTotalItemsCount());
@@ -56,8 +53,11 @@ public class ProductController {
             return "redirect:/login";
         }
 
+        String safeRedirect = RedirectValidator.sanitizeRelativePath(redirectUrl);
+
         try {
-            Product product = productService.verifyAndDeductStock(id, quantity);
+            int existingInCart = cartService.getQuantityInCart(id);
+            Product product = productService.verifyStockAvailable(id, existingInCart + quantity);
 
             for (int i = 0; i < quantity; i++) {
                 cartService.addProduct(product);
@@ -69,14 +69,14 @@ public class ProductController {
                 return "redirect:/cart";
             }
 
-            if (redirectUrl != null && !redirectUrl.isBlank()) {
-                return "redirect:" + redirectUrl;
+            if (safeRedirect != null) {
+                return "redirect:" + safeRedirect;
             }
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            if (redirectUrl != null && !redirectUrl.isBlank()) {
-                return "redirect:" + redirectUrl;
+            if (safeRedirect != null) {
+                return "redirect:" + safeRedirect;
             }
         }
         return "redirect:/";

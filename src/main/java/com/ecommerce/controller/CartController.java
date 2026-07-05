@@ -1,7 +1,7 @@
 package com.ecommerce.controller;
 
-import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.service.CartService;
+import com.ecommerce.util.OrderFinancials;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,11 +14,9 @@ import java.math.BigDecimal;
 @Controller
 public class CartController {
     private final CartService cartService;
-    private final ProductRepository productRepository;
 
-    public CartController(CartService cartService, ProductRepository productRepository) {
+    public CartController(CartService cartService) {
         this.cartService = cartService;
-        this.productRepository = productRepository;
     }
 
     @GetMapping("/cart")
@@ -26,9 +24,9 @@ public class CartController {
         model.addAttribute("cartItems", cartService.getCartItems());
 
         BigDecimal subtotal = cartService.getSubTotal();
-        BigDecimal shippingCost = subtotal.compareTo(new BigDecimal("50")) >= 0 ? BigDecimal.ZERO : new BigDecimal("5.99");
-        BigDecimal tax = subtotal.multiply(new BigDecimal("0.05"));
-        BigDecimal total = subtotal.add(shippingCost).add(tax);
+        BigDecimal shippingCost = OrderFinancials.calculateShipping(subtotal);
+        BigDecimal tax = OrderFinancials.calculateTax(subtotal);
+        BigDecimal total = OrderFinancials.calculateTotal(subtotal);
 
         model.addAttribute("totalItems", cartService.getTotalItemsCount());
         model.addAttribute("subtotal", subtotal);
@@ -43,12 +41,17 @@ public class CartController {
     @PostMapping("/cart/update/{cartItemId}")
     public String updateCartItemQuantity(
             @PathVariable Long cartItemId,
-            @RequestParam String action) {
+            @RequestParam String action,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 
-        if ("increase".equals(action)) {
-            cartService.increaseQuantity(cartItemId);
-        } else if ("decrease".equals(action)) {
-            cartService.decreaseQuantity(cartItemId);
+        try {
+            if ("increase".equals(action)) {
+                cartService.increaseQuantity(cartItemId);
+            } else if ("decrease".equals(action)) {
+                cartService.decreaseQuantity(cartItemId);
+            }
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
 
         return "redirect:/cart";

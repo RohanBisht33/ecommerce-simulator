@@ -2,7 +2,6 @@ package com.ecommerce.repository;
 
 import com.ecommerce.entity.Order;
 import com.ecommerce.entity.OrderStatus;
-import com.ecommerce.entity.Product;
 import com.ecommerce.entity.User;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -12,7 +11,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +28,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUser(User user);
 
     @EntityGraph(attributePaths = {"orderItems", "orderItems.product"})
-    List<Order> findByUserAndStatus(User user, String status);
+    List<Order> findByUserAndStatus(User user, OrderStatus status);
+
+    Optional<Order> findByIdempotencyKey(String idempotencyKey);
 
     @Override
     @EntityGraph(attributePaths = {"user", "orderItems", "orderItems.product"})

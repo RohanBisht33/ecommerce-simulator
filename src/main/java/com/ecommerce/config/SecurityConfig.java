@@ -19,7 +19,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/products/**", "/css/**", "/js/**").permitAll()
                         // Admin roles require the ROLE_ prefix since the custom UserDetailsService preserves it.
                         .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/checkout", "/buy/now/**", "/cart/**").authenticated()
