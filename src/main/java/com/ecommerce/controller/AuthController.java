@@ -62,7 +62,7 @@ public class AuthController {
             return "register";
         }
     
-        Optional<User> existingUser = userRepository.findByUsername(username);
+        Optional<User> existingUser = userRepository.findByUsernameOrEmail(username, email);
         if (existingUser.isPresent()) {
             model.addAttribute("registerError", "Registration failed.");
             model.addAttribute("usernameError", "Username is already taken!");
@@ -71,7 +71,7 @@ public class AuthController {
 
         try {
             String encryptedPassword = passwordEncoder.encode(password);
-            User newUser = new User(username, encryptedPassword, "ROLE_CUSTOMER");
+            User newUser = new User(username, email, encryptedPassword, "ROLE_CUSTOMER");
             userRepository.save(newUser);
 
             redirectAttributes.addFlashAttribute("registerSuccess", "Account created successfully! Please sign in.");

@@ -74,7 +74,7 @@ public class OrderController {
             return "redirect:/login";
         }
 
-        User user = userRepository.findByUsername(principal.getName())
+        User user = userRepository.findByUsernameOrEmail(principal.getName(), principal.getName())
                 .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found"));
 
         List<Order> orders;
