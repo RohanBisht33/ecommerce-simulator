@@ -110,11 +110,8 @@ public class OrderService {
     }
 
     private User getCurrentAuthenticatedUser() {
-        // 1. Extract the credential string used to log into the application
-        String currentUsernameOrEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        // 2. Query both columns simultaneously using the single identifier
-        return userRepository.findByUsernameOrEmail(currentUsernameOrEmail, currentUsernameOrEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User profile not found for: " + currentUsernameOrEmail));
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("User profile not found"));
     }
 }

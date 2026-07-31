@@ -47,7 +47,7 @@ public class CartService {
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             return null;
         }
-        return userRepository.findByUsernameOrEmail(auth.getName(), auth.getName()).orElse(null);
+        return userRepository.findByUsername(auth.getName()).orElse(null);
     }
 
     private void checkOwnership(CartItem item, User currentUser) {

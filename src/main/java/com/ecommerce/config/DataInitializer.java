@@ -19,8 +19,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String[] args) {
-        // Fix: Pass "admin" for both parameters to match the method signature
-        if (userRepository.findByUsernameOrEmail("admin", "admin").isEmpty()) {
+        if (userRepository.findByUsername("admin").isEmpty()) {
             String rawPassword = System.getenv("ADMIN_INITIAL_PASSWORD");
 
             if (rawPassword == null || rawPassword.isBlank()) {
@@ -29,8 +28,7 @@ public class DataInitializer implements CommandLineRunner {
             }
 
             String encryptedPassword = passwordEncoder.encode(rawPassword);
-            // Default seed user gets identical username and email values for fallback testing
-            User newUser = new User("admin", "admin@nexstore.com", encryptedPassword, "ROLE_ADMIN");
+            User newUser = new User("admin", encryptedPassword, "ROLE_ADMIN");
             userRepository.save(newUser);
         }
     }
