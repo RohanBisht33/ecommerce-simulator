@@ -53,6 +53,21 @@
       color: var(--text-primary); text-decoration:none;
     }
     .nex-logo span { color: var(--brand-accent); }
+    .cart-pill {
+      background: var(--brand-card);
+      border: 1px solid var(--brand-border);
+      border-radius: 50px;
+      padding: 0.35rem 0.9rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 0.88rem;
+      transition: border-color var(--transition), background var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .cart-pill:hover { border-color: var(--brand-accent); color: var(--brand-accent); }
     .nex-nav-link {
       color: var(--text-muted); font-size:0.87rem;
       text-decoration:none; display:inline-flex;
@@ -544,7 +559,9 @@
 </head>
 <body>
 
+
 <!-- ══ NAVBAR ══ -->
+
 <nav class="nex-navbar">
   <div class="container d-flex align-items-center justify-content-between">
     <a href="/" class="nex-logo">Nex<span>Store</span></a>
@@ -553,22 +570,23 @@
       <span sec:authorize="hasRole('ADMIN')"
             style="background:rgba(232,240,74,0.12);border:1px solid rgba(232,240,74,0.35);
                    color:var(--brand-accent);font-size:0.72rem;font-weight:700;letter-spacing:0.6px;
-                   text-transform:uppercase;padding:3px 10px;border-radius:50px;">
-        <i class="bi bi-shield-fill-check me-1"></i>Admin
+                   text-transform:uppercase;padding:3px 10px;border-radius:50px;
+                   display:inline-flex;align-items:center;gap:5px;">
+        <i class="bi bi-shield-fill-check"></i>Admin
       </span>
       <!-- Back to store -->
-      <a href="/" class="nex-nav-link">
+      <a href="/" class="cart-pill">
         <i class="bi bi-shop"></i> Store
       </a>
-      <a href="/orders" class="nex-nav-link">
-        My Orders
+      <a href="/orders" class="cart-pill">
+        <i class="bi bi-bag-check"></i> My Orders
       </a>
       <!-- Login / Logout -->
-      <a href="/login" sec:authorize="isAnonymous()" class="nex-nav-link">
+      <a href="/login" sec:authorize="isAnonymous()" class="cart-pill">
         <i class="bi bi-person"></i> Sign In
       </a>
       <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="margin:0;">
-        <button type="button" class="nex-nav-link" onclick="confirmSignOut(this.form)" style="background:none;border:none;cursor:pointer;padding:0;">
+        <button type="button" class="cart-pill" onclick="confirmSignOut(this.form)" style="cursor:pointer;border:1px solid var(--brand-border);background:var(--brand-card);border-radius:50px;padding:0.35rem 0.9rem;color:var(--text-primary);font-size:0.88rem;display:inline-flex;align-items:center;gap:6px;">
           <i class="bi bi-box-arrow-right"></i>
           <span sec:authentication="name">User</span> · Sign Out
         </button>
