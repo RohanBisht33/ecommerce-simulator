@@ -71,7 +71,7 @@ public class AuthController {
 
         try {
             String encryptedPassword = passwordEncoder.encode(password);
-            User newUser = new User(username, encryptedPassword, "ROLE_CUSTOMER");
+            User newUser = new User(username, encryptedPassword, "ROLE_CUSTOMER", email);
             userRepository.save(newUser);
 
             redirectAttributes.addFlashAttribute("registerSuccess", "Account created successfully! Please sign in.");
